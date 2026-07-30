@@ -3,7 +3,7 @@ export function CaptainsCallTab({ teams, leader, captainsCall, setCaptainsCall }
     <div className="panel" key="call">
       <h2>Captain's Call</h2>
       <p className="hint">
-        Awarded to the table topper after the Lie Auction. One use, any time in the rebus round, never in the
+        Awarded to the table topper after Too Good to be True. One use, any time in the rebus round, never in the
         Super Over. Current leader: <strong style={{ color: leader.color }}>{leader.name}</strong> with {leader.points} pts.
       </p>
       <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>

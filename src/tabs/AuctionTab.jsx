@@ -3,7 +3,7 @@ import { TimerRing } from "../components/TimerRing.jsx";
 export function AuctionTab({ teams, addPoints, timer, auctionRound, setAuctionRound }) {
   return (
     <div className="panel" key="auction">
-      <h2>Lie Auction <span className="super-tag" style={{ background: "#2F9BD6" }}>ROUND {auctionRound} / 5</span></h2>
+      <h2>Too Good to be True <span className="super-tag" style={{ background: "#2F9BD6" }}>ROUND {auctionRound} / 5</span></h2>
       <p className="hint">
         Read the fact. Every team stands one claimant, four of them lying. Sixty seconds of interrogation,
         then simultaneous written votes; the owner casts a discarded decoy. +5 correct guess · +5 per team a

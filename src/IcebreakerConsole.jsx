@@ -99,7 +99,7 @@ export default function IcebreakerConsole() {
 
   const TABS = [
     ["teams", "TEAMS"],
-    ["auction", "LIE AUCTION"],
+    ["auction", "TOO GOOD TO BE TRUE"],
     ["rebus", "REBUS"],
     ["uno", "FORFEITS"],
     ["call", "CAPTAIN'S CALL"],
