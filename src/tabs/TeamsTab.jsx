@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { CountUp } from "../components/CountUp.jsx";
 
-export function TeamsTab({ admin, teams, addPoints, rename, resetEvent }) {
+export function TeamsTab({ admin, teams, addPoints, rename, resetEvent, addTeam, canAddTeam, nextTeamName, removeLastTeam, canRemoveLast }) {
   const [confirmReset, setConfirmReset] = useState(false);
   return (
     <div className="panel" key="teams">
@@ -25,6 +25,15 @@ export function TeamsTab({ admin, teams, addPoints, rename, resetEvent }) {
           <div className="pts"><CountUp value={t.points} /></div>
         </div>
       ))}
+      {admin && (
+        <div style={{ marginTop: 20, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <button className="btn gold" disabled={!canAddTeam} onClick={addTeam}>
+            {canAddTeam ? `Add team · ${nextTeamName}` : "Team bench is empty"}
+          </button>
+          <button className="btn ghost" disabled={!canRemoveLast} onClick={removeLastTeam}>Remove last team</button>
+          <span className="deck-meta">{teams.length} teams · removal only while the last team is untouched</span>
+        </div>
+      )}
       {admin && <div style={{ marginTop: 24, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
         {confirmReset ? (
           <>

@@ -8,7 +8,7 @@ import { useState, useEffect } from "react";
 ───────────────────────────────────────────────────────────── */
 
 import "./styles.css";
-import { DEFAULT_TEAMS } from "./data/teams.js";
+import { DEFAULT_TEAMS, RESERVE_TEAMS } from "./data/teams.js";
 import { store } from "./lib/store.js";
 import { useCountdown } from "./hooks/useCountdown.js";
 import { ScoreStrip } from "./components/ScoreStrip.jsx";
@@ -40,6 +40,7 @@ export default function IcebreakerConsole({ onBackToSlides }) {
   const [captainsCall, setCaptainsCall] = useState({ holder: null, used: false, power: null });
   const [auctionRound, setAuctionRound] = useState(1);
   const [plus4Team, setPlus4Team] = useState(null);
+  const [playerTeams, setPlayerTeams] = useState({});
   const [hydrated, setHydrated] = useState(false);
   const [showQR, setShowQR] = useState(false);
   const timer = useCountdown();
@@ -50,6 +51,7 @@ export default function IcebreakerConsole({ onBackToSlides }) {
     if (s.captainsCall) setCaptainsCall(s.captainsCall);
     if (s.auctionRound) setAuctionRound(s.auctionRound);
     if (typeof s.puzzleIdx === "number") setPuzzleIdx(s.puzzleIdx);
+    if (s.playerTeams) setPlayerTeams(s.playerTeams);
   };
 
   /* ── persistence: load once, then autosave ── */
@@ -79,11 +81,11 @@ export default function IcebreakerConsole({ onBackToSlides }) {
     if (!hydrated || SPECTATOR || !IS_ADMIN) return;
     const t = setTimeout(() => {
       store
-        .set("tpl-event-state", JSON.stringify({ teams, drawLog, captainsCall, auctionRound, puzzleIdx }))
+        .set("tpl-event-state", JSON.stringify({ teams, drawLog, captainsCall, auctionRound, puzzleIdx, playerTeams }))
         .catch(() => {});
     }, 400);
     return () => clearTimeout(t);
-  }, [hydrated, teams, drawLog, captainsCall, auctionRound, puzzleIdx]);
+  }, [hydrated, teams, drawLog, captainsCall, auctionRound, puzzleIdx, playerTeams]);
 
   const resetEvent = async () => {
     setTeams(DEFAULT_TEAMS);
@@ -91,12 +93,37 @@ export default function IcebreakerConsole({ onBackToSlides }) {
     setCaptainsCall({ holder: null, used: false, power: null });
     setAuctionRound(1);
     setPuzzleIdx(0);
+    setPlayerTeams({});
     try { await store.delete("tpl-event-state"); } catch (e) { /* nothing saved */ }
   };
 
   const addPoints = (id, d) =>
     setTeams((ts) => ts.map((t) => (t.id === id ? { ...t, points: t.points + d } : t)));
   const rename = (id, name) => setTeams((ts) => ts.map((t) => (t.id === id ? { ...t, name } : t)));
+
+  const MAX_TEAMS = DEFAULT_TEAMS.length + RESERVE_TEAMS.length;
+  const nextReserve = RESERVE_TEAMS[teams.length - DEFAULT_TEAMS.length];
+  const addTeam = () =>
+    setTeams((ts) => {
+      const reserve = RESERVE_TEAMS[ts.length - DEFAULT_TEAMS.length];
+      if (!reserve) return ts;
+      const nextId = Math.max(...ts.map((t) => t.id)) + 1;
+      return [...ts, { id: nextId, name: reserve.name, points: 0, color: reserve.color }];
+    });
+
+  const lastTeam = teams[teams.length - 1];
+  const canRemoveLast =
+    teams.length > 2 &&
+    lastTeam.points === 0 &&
+    !drawLog.some((d) => d.teamId === lastTeam.id) &&
+    captainsCall.holder !== lastTeam.id;
+  const removeLastTeam = () => {
+    if (!canRemoveLast) return;
+    setTeams((ts) => ts.slice(0, -1));
+    setPlayerTeams((pt) =>
+      Object.fromEntries(Object.entries(pt).filter(([, teamId]) => teamId !== lastTeam.id))
+    );
+  };
 
   const logDraw = (teamId, cardType) => {
     setDrawLog((l) => [{ teamId, cardType }, ...l]);
@@ -136,7 +163,7 @@ export default function IcebreakerConsole({ onBackToSlides }) {
         <div className="mast-slab">Once Upon a Thursday</div>
         <div className="mast-meta">
           <span className="l1">HOST CONSOLE{!IS_ADMIN && <span className="view-chip">VIEW ONLY</span>}</span>
-          <span className="l2">The happiest league on earth · 30 players · 5 teams</span>
+          <span className="l2">The happiest league on earth · 30 players · {teams.length} teams</span>
         </div>
         <div className="mast-actions">
           <button className="deck-skip" onClick={() => setShowQR(true)}>JOIN QR</button>
@@ -154,8 +181,14 @@ export default function IcebreakerConsole({ onBackToSlides }) {
         ))}
       </div>
 
-      {tab === "teams" && <TeamsTab admin={IS_ADMIN} teams={teams} addPoints={addPoints} rename={rename} resetEvent={resetEvent} />}
-      {tab === "players" && <PlayersTab admin={IS_ADMIN} />}
+      {tab === "teams" && (
+        <TeamsTab
+          admin={IS_ADMIN} teams={teams} addPoints={addPoints} rename={rename} resetEvent={resetEvent}
+          addTeam={addTeam} canAddTeam={teams.length < MAX_TEAMS} nextTeamName={nextReserve?.name}
+          removeLastTeam={removeLastTeam} canRemoveLast={canRemoveLast}
+        />
+      )}
+      {tab === "players" && <PlayersTab admin={IS_ADMIN} teams={teams} playerTeams={playerTeams} setPlayerTeams={setPlayerTeams} />}
       {tab === "auction" && <AuctionTab admin={IS_ADMIN} teams={teams} addPoints={addPoints} timer={timer} auctionRound={auctionRound} setAuctionRound={setAuctionRound} />}
       {tab === "rebus" && <RebusTab admin={IS_ADMIN} teams={teams} addPoints={addPoints} timer={timer} puzzleIdx={puzzleIdx} setPuzzleIdx={setPuzzleIdx} />}
       {tab === "uno" && <ForfeitsTab admin={IS_ADMIN} teams={teams} drawLog={drawLog} logDraw={logDraw} undoDraw={undoDraw} />}

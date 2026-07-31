@@ -31,6 +31,14 @@ export default async function handler(req, res) {
         res.status(400).send("name required");
         return;
       }
+      const existing = await list({ prefix: PREFIX });
+      const names = await Promise.all(
+        existing.blobs.map((b) => fetch(b.url).then((r) => r.json()).then((p) => p.name).catch(() => null))
+      );
+      if (names.some((n) => n && n.toLowerCase() === name.toLowerCase())) {
+        res.status(409).send("name taken");
+        return;
+      }
       const player = { id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, name, joinedAt: Date.now() };
       await put(`${PREFIX}${player.id}.json`, JSON.stringify(player), {
         access: "public",

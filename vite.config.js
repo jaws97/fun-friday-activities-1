@@ -69,8 +69,14 @@ function eventApi() {
             res.end("name required");
             return;
           }
+          const players = readPlayers();
+          if (players.some((p) => p.name.toLowerCase() === clean.toLowerCase())) {
+            res.statusCode = 409;
+            res.end("name taken");
+            return;
+          }
           const player = { id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, name: clean, joinedAt: Date.now() };
-          fs.writeFileSync(PLAYERS_FILE, JSON.stringify([...readPlayers(), player], null, 2));
+          fs.writeFileSync(PLAYERS_FILE, JSON.stringify([...players, player], null, 2));
           res.setHeader("Content-Type", "application/json");
           res.end(JSON.stringify(player));
         } catch (e) {

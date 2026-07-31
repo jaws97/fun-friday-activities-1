@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 
 /* Live list of everyone who scanned the QR and joined. Polls the registry
-   so names appear as they come in. Admin can drop a stray entry or clear
-   the lot; this list is the base for team allocation and player points. */
-export function PlayersTab({ admin }) {
+   so names appear as they come in. Admin can shuffle everyone randomly
+   into the teams (round-robin, so sizes stay even), drop a stray entry,
+   or clear the lot. Assignments live in the shared event state, so they
+   survive refresh and show up on each player's own /join page. */
+export function PlayersTab({ admin, teams, playerTeams, setPlayerTeams }) {
   const [players, setPlayers] = useState([]);
   const [confirmClear, setConfirmClear] = useState(false);
 
@@ -27,28 +29,66 @@ export function PlayersTab({ admin }) {
   const clearAll = async () => {
     try { await fetch("/api/players", { method: "DELETE" }); } catch (e) { /* retry next poll */ }
     setConfirmClear(false);
+    setPlayerTeams({});
     load();
   };
+
+  const shuffle = () => {
+    const order = [...players];
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    const next = {};
+    order.forEach((p, i) => { next[p.id] = teams[i % teams.length].id; });
+    setPlayerTeams(next);
+  };
+
+  const assigned = players.some((p) => playerTeams[p.id] !== undefined);
+  const chip = (p, i) => (
+    <div key={p.id} className="player-chip">
+      <span className="player-num">{String(i + 1).padStart(2, "0")}</span>
+      <span className="player-name">{p.name}</span>
+      {admin && <button className="player-x" title="Remove" onClick={() => remove(p.id)}>✕</button>}
+    </div>
+  );
 
   return (
     <div className="panel" key="players">
       <h2>Players <span className="super-tag" style={{ background: "#2F9BD6" }}>{players.length} JOINED</span></h2>
       <p className="hint">
         Hit the QR button up top and put it on the big screen. Everyone scans, types a name, and shows up
-        here live — the raw material for team allocation and individual points.
+        here live. Shuffle deals the room evenly into the five teams — each player's phone reveals their
+        team the moment you do.
       </p>
+      {admin && players.length > 0 && (
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 18 }}>
+          <button className="btn gold" onClick={shuffle}>{assigned ? "Re-shuffle teams" : "Shuffle into teams"}</button>
+          {assigned && <button className="btn ghost" onClick={() => setPlayerTeams({})}>Clear assignments</button>}
+        </div>
+      )}
       {players.length === 0 ? (
         <div className="deck-meta">Nobody yet — show the QR and watch this fill up.</div>
+      ) : !assigned ? (
+        <div className="player-grid">{players.map(chip)}</div>
       ) : (
-        <div className="player-grid">
-          {players.map((p, i) => (
-            <div key={p.id} className="player-chip">
-              <span className="player-num">{String(i + 1).padStart(2, "0")}</span>
-              <span className="player-name">{p.name}</span>
-              {admin && <button className="player-x" title="Remove" onClick={() => remove(p.id)}>✕</button>}
+        <>
+          {teams.map((t) => {
+            const members = players.filter((p) => playerTeams[p.id] === t.id);
+            return (
+              <div key={t.id} style={{ marginBottom: 6 }}>
+                <div className="subhead" style={{ color: t.color }}>{t.name} · {members.length}</div>
+                <div className="player-grid">{members.map(chip)}</div>
+              </div>
+            );
+          })}
+          {players.some((p) => playerTeams[p.id] === undefined) && (
+            <div style={{ marginBottom: 6 }}>
+              <div className="subhead" style={{ color: "var(--mut)" }}>Joined after the shuffle</div>
+              <div className="player-grid">{players.filter((p) => playerTeams[p.id] === undefined).map(chip)}</div>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
       {admin && players.length > 0 && (
         <div style={{ marginTop: 22, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>

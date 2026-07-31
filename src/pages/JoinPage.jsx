@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const savedPlayer = () => {
   try { return JSON.parse(localStorage.getItem("funfriday-player")); } catch (e) { return null; }
@@ -14,6 +14,26 @@ export function JoinPage() {
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [myTeam, setMyTeam] = useState(null);
+
+  /* Once registered, watch the shared state for the host's team shuffle —
+     the phone reveals its owner's team the moment it lands. */
+  useEffect(() => {
+    if (!player) return;
+    const check = async () => {
+      try {
+        const r = await fetch("/api/state", { cache: "no-store" });
+        if (r.ok && r.headers.get("x-event-state")) {
+          const s = await r.json();
+          const teamId = s.playerTeams?.[player.id];
+          setMyTeam(teamId !== undefined ? s.teams?.find((t) => t.id === teamId) ?? null : null);
+        }
+      } catch (e) { /* offline — keep last known team */ }
+    };
+    check();
+    const id = setInterval(check, 5000);
+    return () => clearInterval(id);
+  }, [player?.id]);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -33,6 +53,11 @@ export function JoinPage() {
         setPlayer(null);
         setEditing(false);
         setError("The host removed your entry — join again");
+        setBusy(false);
+        return;
+      }
+      if (r.status === 409) {
+        setError("That name's already taken — add a surname or a nickname");
         setBusy(false);
         return;
       }
@@ -82,8 +107,17 @@ export function JoinPage() {
           <div className="slide center">
             <div className="sl-kicker">YOU'RE ON THE TEAMSHEET</div>
             <div className="sl-mast" style={{ fontSize: "clamp(30px,6vw,64px)" }}>{player.name}</div>
-            <div className="sl-sub">Registration confirmed</div>
-            <div className="sl-meta">HANG TIGHT · THE HOST TAKES IT FROM HERE</div>
+            {myTeam ? (
+              <>
+                <div className="sl-sub">Your team</div>
+                <div className="join-team" style={{ borderColor: myTeam.color, color: myTeam.color }}>{myTeam.name}</div>
+              </>
+            ) : (
+              <>
+                <div className="sl-sub">Registration confirmed</div>
+                <div className="sl-meta">HANG TIGHT · TEAMS DROP ON THIS SCREEN</div>
+              </>
+            )}
             <button className="btn ghost" onClick={() => { setEditing(true); setName(player.name); }}>
               Change my name
             </button>
