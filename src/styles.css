@@ -218,4 +218,94 @@ select:focus { outline:none; border-color:var(--gold); }
 .p4-team { font-family:var(--cond); font-weight:800; font-size:clamp(34px,7vw,58px); letter-spacing:0.06em; margin-top:12px; text-transform:uppercase; }
 .p4-sub { font-family:var(--cond); font-weight:700; font-size:16px; letter-spacing:0.3em; color:#FF6B7F; margin-top:10px; }
 
+/* ── slide deck ── */
+.deck { position:fixed; inset:0; background:var(--ink); color:var(--text); font-family:var(--body); overflow:hidden; user-select:none; }
+.deck::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 42% at 18% -12%, rgba(232,181,77,0.12), transparent 60%),
+    radial-gradient(ellipse 55% 38% at 95% 108%, rgba(47,155,214,0.08), transparent 60%);
+}
+.deck-slide { position:absolute; inset:0 0 80px; display:flex; align-items:center; justify-content:center; animation:slideIn 0.5s cubic-bezier(0.22,1,0.36,1) both; }
+@keyframes slideIn { from { opacity:0; transform:translateX(46px); } to { opacity:1; transform:none; } }
+.slide.center { display:flex; flex-direction:column; align-items:center; text-align:center; gap:18px; padding:40px; max-width:1100px; }
+.sl-kicker { font-family:var(--cond); font-weight:700; font-size:15px; letter-spacing:0.42em; color:var(--gold); text-transform:uppercase; animation:fadeUp 0.6s 0.1s both; }
+.sl-mast {
+  background:linear-gradient(115deg, var(--gold-lo), var(--gold) 45%, var(--gold-hi) 60%, var(--gold));
+  color:#100B02; font-family:var(--cond); font-weight:800;
+  font-size:clamp(44px,7.5vw,96px); letter-spacing:0.04em; text-transform:uppercase; line-height:1.05;
+  padding:8px 40px 12px; clip-path:polygon(16px 0, 100% 0, calc(100% - 16px) 100%, 0 100%);
+  animation:mastIn 0.7s 0.25s cubic-bezier(0.22,1,0.36,1) both;
+}
+.sl-sub { font-family:var(--cond); font-weight:700; font-size:clamp(18px,2.6vw,28px); letter-spacing:0.3em; text-transform:uppercase; color:var(--text); animation:fadeUp 0.6s 0.55s both; }
+.sl-meta { font-size:13px; letter-spacing:0.24em; color:var(--mut); animation:fadeUp 0.6s 0.75s both; }
+.sl-cta { font-size:19px; padding:13px 34px 15px; margin-top:14px; animation:fadeUp 0.6s 0.95s both; }
+.sl-foot { color:var(--mut); font-size:14px; line-height:1.7; letter-spacing:0.04em; animation:fadeUp 0.6s both; }
+.deck-skip {
+  position:absolute; top:18px; right:22px; background:rgba(255,255,255,0.03); border:1px solid var(--line);
+  color:var(--mut); font-family:var(--cond); font-weight:700; font-size:12px; letter-spacing:0.18em;
+  padding:6px 14px 7px; cursor:pointer; transition:color 0.2s, border-color 0.2s;
+}
+.deck-skip:hover { color:var(--gold-hi); border-color:var(--gold); }
+.mast-back { position:static; margin-left:auto; }
+.deck-nav { position:absolute; bottom:22px; left:0; right:0; display:flex; align-items:center; justify-content:center; gap:18px; }
+.deck-dots { display:flex; gap:8px; }
+.deck-dot { width:8px; height:8px; border-radius:50%; background:rgba(232,181,77,0.22); transition:background 0.2s, transform 0.2s; }
+.deck-dot.on { background:var(--gold); transform:scale(1.3); }
+
+/* ── useless-math slide ── */
+.eq-row { display:flex; align-items:center; justify-content:center; gap:clamp(12px,2.4vw,26px); flex-wrap:wrap; margin:10px 0 4px; }
+.eq-word { font-family:var(--cond); font-weight:800; font-size:clamp(42px,7.5vw,88px); line-height:1; color:var(--text); animation:stampIn 0.45s both; }
+.eq-word.op { color:var(--mut); font-weight:600; font-size:clamp(32px,5.5vw,64px); }
+.eq-word.result {
+  background:linear-gradient(115deg,var(--gold-lo),var(--gold-hi),var(--gold));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.eq-l { display:inline-block; position:relative; transition:color 0.35s, opacity 0.35s; }
+.eq-l.struck { color:#E4374F; opacity:0.4; }
+.eq-l.struck::after {
+  content:''; position:absolute; left:-8%; right:-8%; top:50%; height:0.09em;
+  background:#E4374F; transform:rotate(-9deg); transform-origin:center;
+  animation:strikeIn 0.28s cubic-bezier(0.22,1,0.36,1) both;
+}
+@keyframes strikeIn { from { transform:scaleX(0) rotate(-9deg); } to { transform:scaleX(1) rotate(-9deg); } }
+.eq-l.keep { color:var(--gold-hi); text-shadow:0 0 26px rgba(232,181,77,0.45); }
+.eq-q { animation:stampIn 0.45s both; }
+.eq-word.result .eq-r {
+  display:inline-block; animation:stampIn 0.35s both;
+  background:linear-gradient(115deg,var(--gold-lo),var(--gold-hi),var(--gold));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.peter {
+  position:absolute; right:clamp(14px,5vw,80px); bottom:24px; margin:0;
+  background:#fff; padding:9px 9px 7px;
+  box-shadow:0 18px 44px rgba(0,0,0,0.55); animation:peterIn 0.5s cubic-bezier(0.22,1.4,0.36,1) both;
+}
+@keyframes peterIn { from { transform:scale(1.35); opacity:0; } to { transform:scale(1); opacity:1; } }
+.peter-img { width:138px; height:188px; background-size:500% auto; background-position:86.5% 85%; background-repeat:no-repeat; }
+.peter figcaption { font-family:var(--cond); font-weight:800; font-size:13px; letter-spacing:0.14em; color:#100B02; text-align:center; padding-top:7px; }
+@media (max-width:600px){ .peter { display:none; } }
+
+/* ── migration slide ── */
+.mig-stage { display:flex; flex-direction:column; align-items:center; gap:16px; animation:stampIn 0.4s both; }
+.mig-art { width:clamp(90px,13vw,140px); height:auto; }
+.mig-current { font-family:var(--cond); font-weight:800; font-size:clamp(30px,4.8vw,58px); line-height:1.12; max-width:900px; color:var(--text); text-wrap:balance; }
+.mig-sub {
+  font-family:var(--cond); font-weight:700; font-size:clamp(20px,3vw,34px); letter-spacing:0.14em;
+  color:var(--gold-hi); text-transform:uppercase; animation:stampIn 0.4s both;
+}
+.mig-current.mig-struck { color:#E4374F; opacity:0.55; text-decoration:line-through; text-decoration-thickness:0.09em; transition:color 0.35s, opacity 0.35s; }
+.mig-current.mig-morph {
+  background:linear-gradient(115deg,var(--gold-lo),var(--gold-hi),var(--gold));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  animation:stampIn 0.4s both;
+}
+.mig-count { font-family:var(--cond); font-weight:700; font-size:13px; letter-spacing:0.3em; color:var(--mut); margin-top:10px; }
+
+.sl-stamp {
+  font-family:var(--cond); font-weight:800; font-size:34px; letter-spacing:0.12em; color:#2FBF71;
+  border:3px solid #2FBF71; display:inline-block; padding:2px 22px 5px; transform:rotate(-6deg);
+  animation:stampIn 0.4s both; margin-top:8px;
+}
+
 @media (prefers-reduced-motion:reduce){ *,*::before,*::after{ animation-duration:0.001s !important; transition-duration:0.001s !important; } }

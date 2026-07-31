@@ -20,11 +20,12 @@ import { RebusTab } from "./tabs/RebusTab.jsx";
 import { ForfeitsTab } from "./tabs/ForfeitsTab.jsx";
 import { CaptainsCallTab } from "./tabs/CaptainsCallTab.jsx";
 
-/* Read-only spectator mode: open the link with ?board (e.g. http://host:5199/?board)
-   to watch the live standings without any host controls. */
-const SPECTATOR = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("board");
+/* Read-only spectator mode: open /board (or any URL with ?board) to watch
+   the live standings without any host controls. */
+const SPECTATOR = typeof window !== "undefined" &&
+  (new URLSearchParams(window.location.search).has("board") || window.location.pathname === "/board");
 
-export default function IcebreakerConsole() {
+export default function IcebreakerConsole({ onBackToSlides }) {
   const [teams, setTeams] = useState(DEFAULT_TEAMS);
   const [tab, setTab] = useState("teams");
   const [drawLog, setDrawLog] = useState([]);
@@ -128,6 +129,7 @@ export default function IcebreakerConsole() {
           <span className="l1">HOST CONSOLE</span>
           <span className="l2">The happiest league on earth · 30 players · 5 teams</span>
         </div>
+        {onBackToSlides && <button className="deck-skip mast-back" onClick={onBackToSlides}>← SLIDES</button>}
       </div>
 
       <ScoreStrip teams={teams} captainsCall={captainsCall} />
