@@ -2,7 +2,7 @@ import { useState } from "react";
 import { PUZZLES } from "../data/puzzles.jsx";
 import { TimerRing } from "../components/TimerRing.jsx";
 
-export function RebusTab({ teams, addPoints, timer, puzzleIdx, setPuzzleIdx }) {
+export function RebusTab({ admin, teams, addPoints, timer, puzzleIdx, setPuzzleIdx }) {
   const [revealed, setRevealed] = useState(false);
   const puzzle = PUZZLES[puzzleIdx];
   return (
@@ -36,17 +36,19 @@ export function RebusTab({ teams, addPoints, timer, puzzleIdx, setPuzzleIdx }) {
         <button className="btn gold" onClick={() => setRevealed((r) => !r)}>{revealed ? "Hide answer" : "Reveal answer"}</button>
         {revealed && <div className="answer">{puzzle.answer}</div>}
       </div>
-      <div className="score-grid">
-        {teams.map((t) => (
-          <div key={t.id} className="score-cell" style={{ "--cellcolor": t.color }}>
-            <div className="nm">{t.name}</div>
-            <div className="row">
-              <button className="btn gold mini" onClick={() => addPoints(t.id, 10)}>+10</button>
-              <button className="btn gold mini" onClick={() => addPoints(t.id, 5)}>+5 FIRST</button>
+      {admin && (
+        <div className="score-grid">
+          {teams.map((t) => (
+            <div key={t.id} className="score-cell" style={{ "--cellcolor": t.color }}>
+              <div className="nm">{t.name}</div>
+              <div className="row">
+                <button className="btn gold mini" onClick={() => addPoints(t.id, 10)}>+10</button>
+                <button className="btn gold mini" onClick={() => addPoints(t.id, 5)}>+5 FIRST</button>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

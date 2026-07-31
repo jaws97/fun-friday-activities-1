@@ -14,7 +14,9 @@ import { useCountdown } from "./hooks/useCountdown.js";
 import { ScoreStrip } from "./components/ScoreStrip.jsx";
 import { Ticker } from "./components/Ticker.jsx";
 import { Plus4Overlay } from "./components/Plus4Overlay.jsx";
+import { QROverlay } from "./components/QROverlay.jsx";
 import { TeamsTab } from "./tabs/TeamsTab.jsx";
+import { PlayersTab } from "./tabs/PlayersTab.jsx";
 import { AuctionTab } from "./tabs/AuctionTab.jsx";
 import { RebusTab } from "./tabs/RebusTab.jsx";
 import { ForfeitsTab } from "./tabs/ForfeitsTab.jsx";
@@ -25,6 +27,11 @@ import { CaptainsCallTab } from "./tabs/CaptainsCallTab.jsx";
 const SPECTATOR = typeof window !== "undefined" &&
   (new URLSearchParams(window.location.search).has("board") || window.location.pathname === "/board");
 
+/* Host gate: the console is view-only unless this localStorage key is set —
+   run  localStorage.setItem('funfriday-admin', 'jaws')  once in DevTools.
+   Non-admins also never autosave, so they can't overwrite shared scores. */
+const IS_ADMIN = typeof window !== "undefined" && window.localStorage.getItem("funfriday-admin") === "jaws";
+
 export default function IcebreakerConsole({ onBackToSlides }) {
   const [teams, setTeams] = useState(DEFAULT_TEAMS);
   const [tab, setTab] = useState("teams");
@@ -34,6 +41,7 @@ export default function IcebreakerConsole({ onBackToSlides }) {
   const [auctionRound, setAuctionRound] = useState(1);
   const [plus4Team, setPlus4Team] = useState(null);
   const [hydrated, setHydrated] = useState(false);
+  const [showQR, setShowQR] = useState(false);
   const timer = useCountdown();
 
   const applyState = (s) => {
@@ -55,9 +63,9 @@ export default function IcebreakerConsole({ onBackToSlides }) {
     })();
   }, []);
 
-  /* ── spectators poll the shared JSON for live updates ── */
+  /* ── spectators and non-admin viewers poll the shared JSON for live updates ── */
   useEffect(() => {
-    if (!SPECTATOR) return;
+    if (!SPECTATOR && IS_ADMIN) return;
     const id = setInterval(async () => {
       try {
         const saved = await store.get("tpl-event-state");
@@ -68,7 +76,7 @@ export default function IcebreakerConsole({ onBackToSlides }) {
   }, []);
 
   useEffect(() => {
-    if (!hydrated || SPECTATOR) return;
+    if (!hydrated || SPECTATOR || !IS_ADMIN) return;
     const t = setTimeout(() => {
       store
         .set("tpl-event-state", JSON.stringify({ teams, drawLog, captainsCall, auctionRound, puzzleIdx }))
@@ -100,6 +108,7 @@ export default function IcebreakerConsole({ onBackToSlides }) {
 
   const TABS = [
     ["teams", "TEAMS"],
+    ["players", "PLAYERS"],
     ["auction", "TOO GOOD TO BE TRUE"],
     ["rebus", "WHAT AM I LOOKING AT?"],
     ["uno", "FORFEITS"],
@@ -126,10 +135,13 @@ export default function IcebreakerConsole({ onBackToSlides }) {
       <div className="masthead">
         <div className="mast-slab">Once Upon a Thursday</div>
         <div className="mast-meta">
-          <span className="l1">HOST CONSOLE</span>
+          <span className="l1">HOST CONSOLE{!IS_ADMIN && <span className="view-chip">VIEW ONLY</span>}</span>
           <span className="l2">The happiest league on earth · 30 players · 5 teams</span>
         </div>
-        {onBackToSlides && <button className="deck-skip mast-back" onClick={onBackToSlides}>← SLIDES</button>}
+        <div className="mast-actions">
+          <button className="deck-skip" onClick={() => setShowQR(true)}>JOIN QR</button>
+          {onBackToSlides && <button className="deck-skip" onClick={onBackToSlides}>← SLIDES</button>}
+        </div>
       </div>
 
       <ScoreStrip teams={teams} captainsCall={captainsCall} />
@@ -142,14 +154,16 @@ export default function IcebreakerConsole({ onBackToSlides }) {
         ))}
       </div>
 
-      {tab === "teams" && <TeamsTab teams={teams} addPoints={addPoints} rename={rename} resetEvent={resetEvent} />}
-      {tab === "auction" && <AuctionTab teams={teams} addPoints={addPoints} timer={timer} auctionRound={auctionRound} setAuctionRound={setAuctionRound} />}
-      {tab === "rebus" && <RebusTab teams={teams} addPoints={addPoints} timer={timer} puzzleIdx={puzzleIdx} setPuzzleIdx={setPuzzleIdx} />}
-      {tab === "uno" && <ForfeitsTab teams={teams} drawLog={drawLog} logDraw={logDraw} undoDraw={undoDraw} />}
-      {tab === "call" && <CaptainsCallTab teams={teams} leader={leader} captainsCall={captainsCall} setCaptainsCall={setCaptainsCall} />}
+      {tab === "teams" && <TeamsTab admin={IS_ADMIN} teams={teams} addPoints={addPoints} rename={rename} resetEvent={resetEvent} />}
+      {tab === "players" && <PlayersTab admin={IS_ADMIN} />}
+      {tab === "auction" && <AuctionTab admin={IS_ADMIN} teams={teams} addPoints={addPoints} timer={timer} auctionRound={auctionRound} setAuctionRound={setAuctionRound} />}
+      {tab === "rebus" && <RebusTab admin={IS_ADMIN} teams={teams} addPoints={addPoints} timer={timer} puzzleIdx={puzzleIdx} setPuzzleIdx={setPuzzleIdx} />}
+      {tab === "uno" && <ForfeitsTab admin={IS_ADMIN} teams={teams} drawLog={drawLog} logDraw={logDraw} undoDraw={undoDraw} />}
+      {tab === "call" && <CaptainsCallTab admin={IS_ADMIN} teams={teams} leader={leader} captainsCall={captainsCall} setCaptainsCall={setCaptainsCall} />}
 
       <Ticker teams={teams} captainsCall={captainsCall} drawLog={drawLog} />
       {plus4Team && <Plus4Overlay team={plus4Team} onDone={() => setPlus4Team(null)} />}
+      {showQR && <QROverlay onClose={() => setShowQR(false)} />}
     </div>
   );
 }

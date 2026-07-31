@@ -1,6 +1,7 @@
 node_modules
 dist
 event-state.json
+players.json
 
 .vercel
 .env*

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { CountUp } from "../components/CountUp.jsx";
 
-export function TeamsTab({ teams, addPoints, rename, resetEvent }) {
+export function TeamsTab({ admin, teams, addPoints, rename, resetEvent }) {
   const [confirmReset, setConfirmReset] = useState(false);
   return (
     <div className="panel" key="teams">
@@ -14,16 +14,18 @@ export function TeamsTab({ teams, addPoints, rename, resetEvent }) {
       {teams.map((t) => (
         <div key={t.id} className="team-row">
           <div className="dot" style={{ background: t.color }} />
-          <input className="team-input" value={t.name} onChange={(e) => rename(t.id, e.target.value)} />
-          <div className="ptbtns">
-            <button className="btn ghost mini" onClick={() => addPoints(t.id, -5)}>−5</button>
-            <button className="btn gold mini" onClick={() => addPoints(t.id, 5)}>+5</button>
-            <button className="btn gold mini" onClick={() => addPoints(t.id, 10)}>+10</button>
-          </div>
+          <input className="team-input" value={t.name} readOnly={!admin} onChange={(e) => admin && rename(t.id, e.target.value)} />
+          {admin && (
+            <div className="ptbtns">
+              <button className="btn ghost mini" onClick={() => addPoints(t.id, -5)}>−5</button>
+              <button className="btn gold mini" onClick={() => addPoints(t.id, 5)}>+5</button>
+              <button className="btn gold mini" onClick={() => addPoints(t.id, 10)}>+10</button>
+            </div>
+          )}
           <div className="pts"><CountUp value={t.points} /></div>
         </div>
       ))}
-      <div style={{ marginTop: 24, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+      {admin && <div style={{ marginTop: 24, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
         {confirmReset ? (
           <>
             <span style={{ fontSize: 13, color: "#FF97A6", fontWeight: 700 }}>Wipe all scores, names, draws, and the Captain's Call?</span>
@@ -36,7 +38,7 @@ export function TeamsTab({ teams, addPoints, rename, resetEvent }) {
             <span className="deck-meta">Progress autosaves and survives refresh</span>
           </>
         )}
-      </div>
+      </div>}
     </div>
   );
 }
