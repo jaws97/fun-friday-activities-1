@@ -19,12 +19,24 @@ const WORDS = [
 
 const PHASE_TIMES = [1900, 2800, 3700, 4600, 5300, 6500];
 
-export function UselessMathSlide() {
+/* Lands frozen at "TWO + ELEVEN − ONE = ?" so the host can set it up;
+   the first arrow press (deck step 1) starts the phase timers. */
+export function UselessMathSlide({ step }) {
   const [phase, setPhase] = useState(0);
   useEffect(() => {
+    if (step < 1) { setPhase(0); return; }
     const timers = PHASE_TIMES.map((t, i) => setTimeout(() => setPhase(i + 1), t));
     return () => timers.forEach(clearTimeout);
-  }, []);
+  }, [step]);
+
+  if (step < 1) {
+    return (
+      <div className="slide center">
+        <div className="sl-kicker">BEFORE ANYTHING ELSE · INFORMATION THAT WILL NEVER BE USEFUL</div>
+        <div className="sl-mast" style={{ fontSize: "clamp(30px,4.8vw,60px)" }}>Useless Math</div>
+      </div>
+    );
+  }
 
   return (
     <div className="slide center">
@@ -64,3 +76,4 @@ export function UselessMathSlide() {
     </div>
   );
 }
+UselessMathSlide.steps = 1;

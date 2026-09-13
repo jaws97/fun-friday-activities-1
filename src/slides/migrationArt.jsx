@@ -1,6 +1,8 @@
 /* One doodle per migration label, index-aligned with LABELS.
    Shared style: gold strokes, occasional accent fills, 120×120 viewBox. */
 
+import cricketGoats from "../assets/cricket.jpg";
+
 const S = { stroke: "#E8B54D", strokeWidth: 4.5, fill: "none", strokeLinecap: "round", strokeLinejoin: "round" };
 const MUT = { ...S, stroke: "#7E8398", strokeWidth: 3 };
 const RED = { ...S, stroke: "#E4374F" };
@@ -47,22 +49,24 @@ export const ART = [
     <path d="M96 92 L102 104 L84 92" {...S} />
     <text x="82" y="82" {...T} fontSize="13" fill="#E8B54D">GOTHILLA</text>
   </svg>,
-  /* 3 · 47 unread groups */
-  <svg {...svgProps} key="whatsapp">
-    <rect x="16" y="28" width="68" height="48" rx="10" {...S} />
-    <path d="M34 76 L30 92 L48 76" {...S} />
-    <path d="M30 44 H70 M30 58 H58" {...MUT} />
-    <circle cx="96" cy="28" r="16" fill="#E4374F" />
-    <text x="96" y="34" {...T} fontSize="17" fill="#fff">47</text>
-  </svg>,
-  /* 3 · Meghana's is overrated */
+  /* 4 · Cricket is my religion — GOAT silhouette poster */
+  <img className="mig-photo" src={cricketGoats} alt="" key="cricket" />,
+  /* · Meghana's is overrated */
   <svg {...svgProps} key="meghanas">
     <text x="60" y="24" {...T} fontSize="18" fill="#E8B54D">★★★☆☆</text>
     <circle cx="60" cy="70" r="34" {...S} />
     <circle cx="60" cy="70" r="21" {...MUT} />
     <text x="60" y="77" {...T} fontSize="17" fill="#F2EFE6" letterSpacing="1">MEH</text>
   </svg>,
-  /* 4 · Vegetable Biryani is a myth */
+  /* 6 · MasterChef of Maggi */
+  <svg {...svgProps} key="maggi">
+    <path d="M30 58 V84 Q30 93 39 93 H81 Q90 93 90 84 V58 M24 58 H96" {...S} />
+    <path d="M16 64 H24 M96 64 H104" {...S} />
+    <path d="M36 50 q6 -9 12 0 q6 9 12 0 q6 -9 12 0 q6 9 12 0" {...S} />
+    <path d="M46 34 q4 -7 0 -13 M64 36 q4 -7 0 -13 M56 28 q4 -7 0 -13" {...MUT} />
+    <text x="60" y="80" {...T} fontSize="13" fill="#E8B54D">2 MIN</text>
+  </svg>,
+  /* · Vegetable Biryani is a myth */
   <svg {...svgProps} key="vegbiryani">
     <path d="M30 62 Q30 90 60 90 Q90 90 90 62 M26 62 H94" {...S} />
     <path d="M32 62 Q60 44 88 62" {...S} />
@@ -86,13 +90,6 @@ export const ART = [
     <path d="M58 52 L52 66 H74 L70 52" {...MUT} />
     <text x="96" y="30" {...T} fontSize="15" fill="#E4374F">@#$!</text>
   </svg>,
-  /* 8 · Cannot eat without a show */
-  <svg {...svgProps} key="show">
-    <rect x="30" y="16" width="60" height="42" rx="5" {...S} />
-    <path d="M54 26 V48 L72 37 Z" fill="#E8B54D" />
-    <ellipse cx="60" cy="90" rx="28" ry="9" {...S} />
-    <path d="M22 74 V96" {...MUT} />
-  </svg>,
   /* 9 · One more episode at 2am */
   <svg {...svgProps} key="2am">
     <path d="M82 18 A26 26 0 1 0 104 54 A20 20 0 1 1 82 18 Z" fill="#F6DC8E" />
@@ -109,13 +106,6 @@ export const ART = [
     <rect x="89" y="48" width="9" height="32" rx="2" {...S} />
     <path d="M6 6 V30 M6 6 H30 M6 6 L24 24 M6 22 Q14 20 20 10 M6 14 Q10 13 13 7" {...MUT} strokeWidth="2.5" />
     <text x="60" y="108" {...T} fontSize="11" fill="#7E8398" letterSpacing="2">SINCE JANUARY</text>
-  </svg>,
-  /* 11 · Reacts with 👍, contributes nothing */
-  <svg {...svgProps} key="thumbs">
-    <rect x="20" y="20" width="80" height="56" rx="12" {...S} />
-    <path d="M42 76 L36 94 L56 76" {...S} />
-    <path d="M46 62 V46 L56 30 Q58 25 62 28 Q65 31 62 38 L59 46 H76 Q83 46 80 53 L75 63 Q73 68 66 68 H50 Z" fill="#E8B54D" />
-    <path d="M84 96 l5 5 l9 -10 M94 96 l5 5 l9 -10" stroke="#2F9BD6" strokeWidth="3.5" fill="none" strokeLinecap="round" />
   </svg>,
   /* 12 · "Quick sync", 40 minutes */
   <svg {...svgProps} key="sync">

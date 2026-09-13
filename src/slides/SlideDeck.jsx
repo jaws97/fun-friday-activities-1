@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { WelcomeSlide } from "./WelcomeSlide.jsx";
+import { CrewSlide } from "./CrewSlide.jsx";
 import { UselessMathSlide } from "./UselessMathSlide.jsx";
 import { MigrationSlide } from "./MigrationSlide.jsx";
 
-const SLIDES = [WelcomeSlide, UselessMathSlide, MigrationSlide];
+const SLIDES = [WelcomeSlide, CrewSlide, UselessMathSlide, MigrationSlide];
 
 /* A slide may declare `Component.steps = N` to claim N in-slide build steps;
    arrow keys walk through the steps before moving between slides. */

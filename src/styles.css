@@ -294,10 +294,10 @@ select:focus { outline:none; border-color:var(--gold); }
 .eq-row { display:flex; align-items:center; justify-content:center; gap:clamp(12px,2.4vw,26px); flex-wrap:wrap; margin:10px 0 4px; }
 .eq-word { font-family:var(--cond); font-weight:800; font-size:clamp(42px,7.5vw,88px); line-height:1; color:var(--text); animation:stampIn 0.45s both; }
 .eq-word.op { color:var(--mut); font-weight:600; font-size:clamp(32px,5.5vw,64px); }
-.eq-word.result {
-  background:linear-gradient(115deg,var(--gold-lo),var(--gold-hi),var(--gold));
-  -webkit-background-clip:text; background-clip:text; color:transparent;
-}
+/* No word-level animation or gradient here: stacking them on top of the
+   per-letter gradient stamps triggers a Chromium background-clip:text paint
+   bug that leaves a scaled ghost of the word behind. */
+.eq-word.result { animation:none; }
 .eq-l { display:inline-block; position:relative; transition:color 0.35s, opacity 0.35s; }
 .eq-l.struck { color:#E4374F; opacity:0.4; }
 .eq-l.struck::after {
@@ -309,7 +309,7 @@ select:focus { outline:none; border-color:var(--gold); }
 .eq-l.keep { color:var(--gold-hi); text-shadow:0 0 26px rgba(232,181,77,0.45); }
 .eq-q { animation:stampIn 0.45s both; }
 .eq-word.result .eq-r {
-  display:inline-block; animation:stampIn 0.35s both;
+  display:inline-block; animation:stampIn 0.35s both; will-change:transform;
   background:linear-gradient(115deg,var(--gold-lo),var(--gold-hi),var(--gold));
   -webkit-background-clip:text; background-clip:text; color:transparent;
 }
@@ -326,6 +326,11 @@ select:focus { outline:none; border-color:var(--gold); }
 /* ── migration slide ── */
 .mig-stage { display:flex; flex-direction:column; align-items:center; gap:16px; animation:stampIn 0.4s both; }
 .mig-art { width:clamp(90px,13vw,140px); height:auto; }
+.mig-photo {
+  width:clamp(260px,32vw,460px); height:auto; display:block;
+  border:1px solid rgba(255,255,255,0.08); border-top:2px solid var(--gold);
+  box-shadow:0 0 38px rgba(232,181,77,0.15);
+}
 .mig-current { font-family:var(--cond); font-weight:800; font-size:clamp(30px,4.8vw,58px); line-height:1.12; max-width:900px; color:var(--text); text-wrap:balance; }
 .mig-sub {
   font-family:var(--cond); font-weight:700; font-size:clamp(20px,3vw,34px); letter-spacing:0.14em;
@@ -338,6 +343,18 @@ select:focus { outline:none; border-color:var(--gold); }
   animation:stampIn 0.4s both;
 }
 .mig-count { font-family:var(--cond); font-weight:700; font-size:13px; letter-spacing:0.3em; color:var(--mut); margin-top:10px; }
+
+/* ── crew slide ── */
+.crew-stage { display:flex; flex-direction:column; align-items:center; gap:16px; animation:stampIn 0.4s both; }
+.crew-frame {
+  position:relative; background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border:1px solid rgba(255,255,255,0.05); border-top:2px solid var(--gold);
+  padding:10px; box-shadow:0 0 44px rgba(232,181,77,0.16);
+  clip-path:polygon(0 0,100% 0,100% calc(100% - 16px),calc(100% - 16px) 100%,0 100%);
+}
+.crew-video { display:block; width:min(52vw, 58vh, 640px); height:auto; }
+.crew-mast { font-size:clamp(28px,4.2vw,52px); animation-delay:0.15s; }
+.crew-tag { font-family:var(--cond); font-weight:700; font-size:clamp(16px,2.2vw,24px); letter-spacing:0.18em; text-transform:uppercase; color:var(--mut); animation:fadeUp 0.6s 0.4s both; }
 
 .sl-stamp {
   font-family:var(--cond); font-weight:800; font-size:34px; letter-spacing:0.12em; color:#2FBF71;
