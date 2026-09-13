@@ -9,7 +9,6 @@ import kavyaVideo from "../assets/kavya.mp4";
 const CREW = [
   {
     role: "The Data Engineers",
-    tagline: "We weld the pipes so your dashboards don't lie",
     video: dataEngineersVideo,
   },
   {
@@ -19,12 +18,10 @@ const CREW = [
   },
   {
     role: "The Managers",
-    tagline: "Bring us the knots",
     video: managersVideo,
   },
   {
     role: "The VP",
-    tagline: "Already saw it coming",
     video: vpVideo,
   },
   {
@@ -49,7 +46,7 @@ export function CrewSlide({ step }) {
             <video className="crew-video" src={crew.video} autoPlay loop muted playsInline />
           </div>
           <div className="sl-mast crew-mast">{crew.role}</div>
-          <div className="crew-tag">{crew.tagline}</div>
+          {crew.tagline && <div className="crew-tag">{crew.tagline}</div>}
         </div>
       )}
     </div>

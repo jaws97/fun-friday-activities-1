@@ -79,7 +79,7 @@ export function JoinPage() {
       <div className="deck-slide">
         {showForm ? (
           <form className="slide center" onSubmit={submit}>
-            <div className="sl-kicker">ONCE UPON A THURSDAY</div>
+            <div className="sl-kicker">JAWS & FRIENDS · ONCE UPON A WEDNESDAY</div>
             <div className="sl-mast" style={{ fontSize: "clamp(28px,5vw,56px)" }}>
               {editing ? "Change your name" : "Enter the league"}
             </div>

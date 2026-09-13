@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 /* ─────────────────────────────────────────────────────────────
-   THURSDAY PREMIER LEAGUE · Host Console
+   WEDNESDAY PREMIER LEAGUE · Host Console
    Broadcast-graphics build: skewed gold slabs, condensed
    numerals, FLIP-animated standings, timer ring, ticker tape,
    full-screen +4 takeover. Physical Uno deck; console logs draws.
@@ -101,11 +101,15 @@ export default function IcebreakerConsole({ onBackToSlides }) {
     setTeams((ts) => ts.map((t) => (t.id === id ? { ...t, points: t.points + d } : t)));
   const rename = (id, name) => setTeams((ts) => ts.map((t) => (t.id === id ? { ...t, name } : t)));
 
-  const MAX_TEAMS = DEFAULT_TEAMS.length + RESERVE_TEAMS.length;
-  const nextReserve = RESERVE_TEAMS[teams.length - DEFAULT_TEAMS.length];
+  /* Bench = every default or reserve name not already on the board, so a
+     saved state from a smaller roster can still grow into the full lineup. */
+  const BENCH = [...DEFAULT_TEAMS.map(({ name, color }) => ({ name, color })), ...RESERVE_TEAMS];
+  const benchFor = (ts) => BENCH.filter((b) => !ts.some((t) => t.name === b.name));
+  const MAX_TEAMS = BENCH.length;
+  const nextReserve = benchFor(teams)[0];
   const addTeam = () =>
     setTeams((ts) => {
-      const reserve = RESERVE_TEAMS[ts.length - DEFAULT_TEAMS.length];
+      const reserve = benchFor(ts)[0];
       if (!reserve) return ts;
       const nextId = Math.max(...ts.map((t) => t.id)) + 1;
       return [...ts, { id: nextId, name: reserve.name, points: 0, color: reserve.color }];
@@ -146,10 +150,10 @@ export default function IcebreakerConsole({ onBackToSlides }) {
     return (
       <div className="app">
         <div className="masthead">
-          <div className="mast-slab">Once Upon a Thursday</div>
+          <div className="mast-slab">Once Upon a Wednesday</div>
           <div className="mast-meta">
             <span className="l1">LIVE STANDINGS</span>
-            <span className="l2">The happiest league on earth · 30 players · 5 teams</span>
+            <span className="l2">Jaws & Friends · 50 players · 10 teams</span>
           </div>
         </div>
         <ScoreStrip teams={teams} captainsCall={captainsCall} />
@@ -160,10 +164,10 @@ export default function IcebreakerConsole({ onBackToSlides }) {
   return (
     <div className="app">
       <div className="masthead">
-        <div className="mast-slab">Once Upon a Thursday</div>
+        <div className="mast-slab">Once Upon a Wednesday</div>
         <div className="mast-meta">
           <span className="l1">HOST CONSOLE{!IS_ADMIN && <span className="view-chip">VIEW ONLY</span>}</span>
-          <span className="l2">The happiest league on earth · 30 players · {teams.length} teams</span>
+          <span className="l2">Jaws & Friends · 50 players · {teams.length} teams</span>
         </div>
         <div className="mast-actions">
           <button className="deck-skip" onClick={() => setShowQR(true)}>JOIN QR</button>

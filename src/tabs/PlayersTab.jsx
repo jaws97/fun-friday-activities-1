@@ -58,7 +58,7 @@ export function PlayersTab({ admin, teams, playerTeams, setPlayerTeams }) {
       <h2>Players <span className="super-tag" style={{ background: "#2F9BD6" }}>{players.length} JOINED</span></h2>
       <p className="hint">
         Hit the QR button up top and put it on the big screen. Everyone scans, types a name, and shows up
-        here live. Shuffle deals the room evenly into the five teams — each player's phone reveals their
+        here live. Shuffle deals the room evenly into the ten teams — each player's phone reveals their
         team the moment you do.
       </p>
       {admin && players.length > 0 && (
