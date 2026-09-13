@@ -141,7 +141,7 @@ export default function IcebreakerConsole({ onBackToSlides }) {
     ["teams", "TEAMS"],
     ["players", "PLAYERS"],
     ["auction", "TOO GOOD TO BE TRUE"],
-    ["rebus", "WHAT AM I LOOKING AT?"],
+    ["rebus", "WAIT, WHAT?"],
     ["uno", "FORFEITS"],
     ["call", "CAPTAIN'S CALL"],
   ];

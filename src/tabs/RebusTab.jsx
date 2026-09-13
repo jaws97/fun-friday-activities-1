@@ -8,7 +8,7 @@ export function RebusTab({ admin, teams, addPoints, timer, puzzleIdx, setPuzzleI
   return (
     <div className="panel" key="rebus">
       <h2>
-        What Am I Looking At?
+        Wait, What?
         {puzzle.superOver
           ? <span className="super-tag">SUPER OVER</span>
           : <span className="super-tag" style={{ background: "#2F9BD6" }}>PUZZLE {puzzleIdx + 1} / {PUZZLES.length}</span>}
