@@ -153,7 +153,7 @@ export default function IcebreakerConsole({ onBackToSlides }) {
           <div className="mast-slab">Once Upon a Wednesday</div>
           <div className="mast-meta">
             <span className="l1">LIVE STANDINGS</span>
-            <span className="l2">Jaws & Friends · 50 players · 10 teams</span>
+            <span className="l2">50 players · 10 teams</span>
           </div>
         </div>
         <ScoreStrip teams={teams} captainsCall={captainsCall} />
@@ -167,7 +167,7 @@ export default function IcebreakerConsole({ onBackToSlides }) {
         <div className="mast-slab">Once Upon a Wednesday</div>
         <div className="mast-meta">
           <span className="l1">HOST CONSOLE{!IS_ADMIN && <span className="view-chip">VIEW ONLY</span>}</span>
-          <span className="l2">Jaws & Friends · 50 players · {teams.length} teams</span>
+          <span className="l2">50 players · {teams.length} teams</span>
         </div>
         <div className="mast-actions">
           <button className="deck-skip" onClick={() => setShowQR(true)}>JOIN QR</button>

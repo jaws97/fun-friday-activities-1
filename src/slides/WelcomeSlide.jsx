@@ -5,7 +5,6 @@ export function WelcomeSlide({ onNext }) {
   const [showQR, setShowQR] = useState(false);
   return (
     <div className="slide center">
-      <div className="sl-kicker">JAWS & FRIENDS PRESENTS</div>
       <div className="sl-mast">Once Upon a Wednesday</div>
       <div className="sl-meta">50 PLAYERS · 10 TEAMS · ONE TROPHY</div>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
