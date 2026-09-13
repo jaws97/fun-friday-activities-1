@@ -125,14 +125,6 @@ export const ART = [
     <path d="M72 68 H108 M81 58 V50 M99 58 V50" {...S} />
     <text x="90" y="86" {...T} fontSize="15" fill="#E8B54D">6d</text>
   </svg>,
-  /* 14 · My cooking is the best */
-  <svg {...svgProps} key="cooking">
-    <path d="M28 68 H82 M30 68 Q30 88 56 88 Q80 88 80 68" {...S} />
-    <path d="M82 70 H104" {...S} />
-    <path d="M42 56 q6 -10 0 -20 M56 58 q6 -10 0 -20 M70 56 q6 -10 0 -20" {...MUT} />
-    <path d="M96 24 L106 42 H86 Z" {...RED} strokeWidth="3.5" />
-    <text x="96" y="39" {...T} fontSize="12" fill="#E4374F">!</text>
-  </svg>,
   /* 15 · Regional movies FDFS */
   <svg {...svgProps} key="fdfs">
     <path d="M24 44 L28 24 L98 32 L96 44" {...S} />

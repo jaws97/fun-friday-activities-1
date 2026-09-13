@@ -14,7 +14,6 @@ export const LABELS = [
   { text: "Gym membership since January, been twice" },
   { text: "Says “quick sync” and takes 40 minutes" },
   { text: "Replies to the group chat six days later like nothing happened" },
-  { text: "My cooking is the best", sub: "The smoke alarm begs to differ", subDelay: true },
   { text: "I go to regional movies FDFS", sub: "6 AM show · Whistles ready", subDelay: true },
   { text: "I like exploring new food joints", sub: "Orders paneer butter masala. Everywhere.", subDelay: true },
   { text: "I like exploring new hobbies", sub: "Started: 11 · Still doing: 0", subDelay: true },

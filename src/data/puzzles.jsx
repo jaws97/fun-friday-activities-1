@@ -5,19 +5,56 @@ export const PUZZLES = [
     id: 1, answer: "Inside job",
     render: (<div style={{ border: "5px solid #1A1D16", padding: "28px 54px", display: "inline-block" }}><span className="rb">JOB</span></div>),
   },
-  { id: 2, answer: "To-do list (two DOs)", render: <span className="rb rb-m">DODO&nbsp;LIST</span> },
   {
     id: 3, answer: "The underdogs",
     render: (<div className="stack"><span style={{ fontSize: 58 }}>🐕🐕</span><span className="rb rb-m">THE</span></div>),
   },
   {
     id: 4, answer: "Hole in one",
-    render: (<div style={{ position: "relative", display: "inline-block" }}>
-      <span className="rb" style={{ fontSize: "clamp(100px,18vw,170px)" }}>1</span>
-      <span style={{ position: "absolute", top: "50%", left: "55%", transform: "translate(-50%,-50%)", width: 30, height: 30, borderRadius: "50%", background: "#F4F1E6", border: "4px solid #1A1D16" }} />
+    render: (<div style={{ position: "relative", display: "inline-block", fontSize: "clamp(100px,18vw,170px)", lineHeight: 1 }}>
+      <span className="rb" style={{ fontSize: "1em" }}>1</span>
+      {/* A punched hole: same colour as the stage, sized to sit inside the stem. */}
+      <span style={{ position: "absolute", top: "48.5%", left: "60.5%", transform: "translate(-50%,-50%)", width: "0.12em", height: "0.12em", borderRadius: "50%", background: "#F4F1E6" }} />
     </div>),
   },
-  { id: 5, answer: "One in a million", render: (<span className="rb rb-m">MILL1ON</span>) },
+  {
+    id: 54, answer: "Eye shadow (EYE casting a shadow)",
+    render: (<div style={{ position: "relative", display: "inline-block", lineHeight: 1, paddingBottom: "0.7em", fontSize: "clamp(48px,9vw,92px)" }}>
+      <span className="rb" style={{ position: "relative", zIndex: 1 }}>EYE</span>
+      {/* The shadow: a copy flipped over the baseline, squashed, slanted and faded. */}
+      <span className="rb" aria-hidden="true" style={{ position: "absolute", left: 0, top: 0, transformOrigin: "bottom left", transform: "scaleY(-0.55) skewX(-40deg)", color: "rgba(26,29,22,0.28)", filter: "blur(1.2px)" }}>EYE</span>
+    </div>),
+  },
+  {
+    id: 55, answer: "Eiffel Tower (I FELL, stacked into a tower)",
+    render: (<div className="stack" style={{ gap: 2 }}>
+      {[15, 19, 24, 30, 37, 45, 54].map((size, i) => (
+        <span key={i} className="rb" style={{ fontSize: `clamp(${Math.round(size * 0.7)}px, ${(size / 10).toFixed(1)}vw, ${size}px)`, lineHeight: 1.05, letterSpacing: "0.06em" }}>I FELL</span>
+      ))}
+    </div>),
+  },
+  {
+    id: 56, answer: "Piece of cake (only a piece of CAKE is left)",
+    render: (<div style={{ display: "inline-block", lineHeight: 1 }}>
+      {/* Top slice of the word, with a wedge cut out of the middle. */}
+      <span className="rb" style={{ display: "inline-block", fontSize: "clamp(64px,12vw,120px)", letterSpacing: "0.06em", clipPath: "polygon(0 0, 100% 0, 100% 58%, 60% 58%, 52% 30%, 46% 58%, 0 58%)" }}>CAKE</span>
+    </div>),
+  },
+  {
+    id: 57, answer: "That's beside the point (THAT beside a point)",
+    render: (<div style={{ display: "inline-flex", alignItems: "center", gap: "0.5em", fontSize: "clamp(40px,7vw,80px)" }}>
+      <span className="rb" style={{ fontSize: "1em" }}>THAT</span>
+      <span aria-hidden="true" style={{ width: "0.22em", height: "0.22em", borderRadius: "50%", background: "#1A1D16" }} />
+      <span className="rb" style={{ fontSize: "1em" }}>THAT</span>
+    </div>),
+  },
+  {
+    id: 58, answer: "Go for it (GO, four ITs)",
+    render: (<div style={{ display: "inline-flex", alignItems: "baseline", gap: "0.45em", fontSize: "clamp(40px,7vw,80px)" }}>
+      <span className="rb" style={{ fontSize: "1em" }}>GO</span>
+      <span className="rb" style={{ fontSize: "1em", letterSpacing: "0.12em" }}>IT IT IT IT</span>
+    </div>),
+  },
   {
     id: 6, answer: "You're under arrest",
     render: (<div className="stack"><span className="rb rb-m">ARREST</span><div className="hline" /><span className="rb rb-m">YOU'RE</span></div>),
@@ -187,7 +224,7 @@ export const PUZZLES = [
   },
   {
     id: 34, answer: "Sunny side up (SUNNY, on the side, reading up)",
-    render: (<div style={{ position: "relative", width: "min(560px, 62vw)", height: 240 }}>
+    render: (<div className="rb-wide" style={{ position: "relative", height: 240 }}>
       <div className="vword" style={{ position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)" }}>
         {"YNNUS".split("").map((c, i) => <span key={i}>{c}</span>)}
       </div>
@@ -296,8 +333,8 @@ export const PUZZLES = [
   },
   {
     id: 51, answer: "Cornerstone (STONE forming a corner)",
-    render: (<div style={{ position: "relative", width: "min(520px, 62vw)", height: 280 }}>
-      <div style={{ position: "absolute", top: 0, right: 0, display: "grid", gridTemplateColumns: "auto auto", justifyItems: "center", lineHeight: 1.05 }}>
+    render: (<div className="rb-wide" style={{ position: "relative", height: 280 }}>
+      <div style={{ position: "absolute", top: -28, right: -18, display: "grid", gridTemplateColumns: "auto auto", justifyItems: "center", lineHeight: 1.05 }}>
         <span className="rb rb-m" style={{ gridColumn: 1, gridRow: 1 }}>S</span>
         <span className="rb rb-m" style={{ gridColumn: 2, gridRow: 1 }}>T</span>
         <span className="rb rb-m" style={{ gridColumn: 2, gridRow: 2 }}>O</span>
