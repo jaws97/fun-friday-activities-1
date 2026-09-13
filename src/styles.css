@@ -282,6 +282,9 @@ select:focus { outline:none; border-color:var(--gold); }
 .player-num { font-family:var(--cond); font-weight:700; font-size:12px; color:var(--gold); letter-spacing:0.1em; }
 .player-name { font-weight:700; font-size:14px; flex:1; overflow-wrap:anywhere; }
 .player-x { background:none; border:none; color:var(--mut); cursor:pointer; font-size:14px; padding:2px 4px; }
+/* The team picker drops to its own row inside the chip so the name never gets squeezed. */
+.player-chip { flex-wrap:wrap; }
+.player-pick { order:10; flex:1 1 100%; padding:4px 8px; font-size:11px; }
 .player-x:hover { color:#FF6B7F; }
 
 .view-chip {

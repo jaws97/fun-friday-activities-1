@@ -45,10 +45,33 @@ export function PlayersTab({ admin, teams, playerTeams, setPlayerTeams }) {
   };
 
   const assigned = players.some((p) => playerTeams[p.id] !== undefined);
-  const chip = (p, i) => (
+  const late = players.filter((p) => playerTeams[p.id] === undefined);
+
+  /* Late joiners: drop each one into whichever team is currently smallest,
+     so existing teams are never reshuffled. */
+  const seatLate = () => {
+    const next = { ...playerTeams };
+    const size = Object.fromEntries(teams.map((t) => [t.id, 0]));
+    players.forEach((p) => { if (next[p.id] !== undefined && size[next[p.id]] !== undefined) size[next[p.id]] += 1; });
+    late.forEach((p) => {
+      const smallest = teams.reduce((a, b) => (size[b.id] < size[a.id] ? b : a));
+      next[p.id] = smallest.id;
+      size[smallest.id] += 1;
+    });
+    setPlayerTeams(next);
+  };
+  const seatOne = (playerId, teamId) => setPlayerTeams({ ...playerTeams, [playerId]: teamId });
+
+  const chip = (p, i, pick) => (
     <div key={p.id} className="player-chip">
       <span className="player-num">{String(i + 1).padStart(2, "0")}</span>
       <span className="player-name">{p.name}</span>
+      {admin && pick === true && (
+        <select className="player-pick" value="" title="Seat on a team" onChange={(e) => seatOne(p.id, Number(e.target.value))}>
+          <option value="" disabled>Team…</option>
+          {teams.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+        </select>
+      )}
       {admin && <button className="player-x" title="Remove" onClick={() => remove(p.id)}>✕</button>}
     </div>
   );
@@ -64,6 +87,9 @@ export function PlayersTab({ admin, teams, playerTeams, setPlayerTeams }) {
       {admin && players.length > 0 && (
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 18 }}>
           <button className="btn gold" onClick={shuffle}>{assigned ? "Re-shuffle teams" : "Shuffle into teams"}</button>
+          {assigned && late.length > 0 && (
+            <button className="btn gold" onClick={seatLate}>Seat {late.length} late {late.length === 1 ? "joiner" : "joiners"}</button>
+          )}
           {assigned && <button className="btn ghost" onClick={() => setPlayerTeams({})}>Clear assignments</button>}
         </div>
       )}
@@ -82,10 +108,10 @@ export function PlayersTab({ admin, teams, playerTeams, setPlayerTeams }) {
               </div>
             );
           })}
-          {players.some((p) => playerTeams[p.id] === undefined) && (
+          {late.length > 0 && (
             <div style={{ marginBottom: 6 }}>
-              <div className="subhead" style={{ color: "var(--mut)" }}>Joined after the shuffle</div>
-              <div className="player-grid">{players.filter((p) => playerTeams[p.id] === undefined).map(chip)}</div>
+              <div className="subhead" style={{ color: "var(--mut)" }}>Joined after the shuffle · pick a team or hit Seat</div>
+              <div className="player-grid">{late.map((p, i) => chip(p, i, true))}</div>
             </div>
           )}
         </>
