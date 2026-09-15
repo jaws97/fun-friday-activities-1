@@ -25,7 +25,7 @@ export function PlayersTab({ admin, teams, playerTeams, setPlayerTeams, resizeRo
 
   useEffect(() => {
     load();
-    const id = setInterval(load, 3000);
+    const id = setInterval(load, 10000); // one storage read per poll: keep it slow
     return () => clearInterval(id);
   }, []);
 
@@ -55,6 +55,7 @@ export function PlayersTab({ admin, teams, playerTeams, setPlayerTeams, resizeRo
 
   const remove = async (id) => {
     try { await fetch(`/api/players?id=${id}`, { method: "DELETE" }); } catch (e) { /* retry next poll */ }
+    setPlayerTeams(({ [id]: _dropped, ...rest }) => rest);
     load();
   };
   const clearAll = async () => {
@@ -108,12 +109,20 @@ export function PlayersTab({ admin, teams, playerTeams, setPlayerTeams, resizeRo
   };
   const seatOne = (playerId, teamId) => setPlayerTeams({ ...playerTeams, [playerId]: teamId });
 
+  /* Once the shuffle has run, every chip carries a team picker: unseated
+     players get a blank "Team…" prompt, seated players show their current
+     team and can be moved to another with one change. */
   const chip = (p, i, pick) => (
     <div key={p.id} className="player-chip">
       <span className="player-num">{String(i + 1).padStart(2, "0")}</span>
       <span className="player-name">{p.name}</span>
-      {admin && pick === true && (
-        <select className="player-pick" value="" title="Seat on a team" onChange={(e) => seatOne(p.id, Number(e.target.value))}>
+      {admin && (pick === true || playerTeams[p.id] !== undefined) && (
+        <select
+          className="player-pick"
+          value={playerTeams[p.id] ?? ""}
+          title={pick === true ? "Seat on a team" : "Move to another team"}
+          onChange={(e) => seatOne(p.id, Number(e.target.value))}
+        >
           <option value="" disabled>Team…</option>
           {teams.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
         </select>

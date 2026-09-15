@@ -51,7 +51,7 @@ export const ART = [
   </svg>,
   /* 4 · Cricket is my religion — GOAT silhouette poster */
   <img className="mig-photo" src={cricketGoats} alt="" key="cricket" />,
-  /* · Meghana's is overrated */
+  /* · Meghana's Biryani is overrated */
   <svg {...svgProps} key="meghanas">
     <text x="60" y="24" {...T} fontSize="18" fill="#E8B54D">★★★☆☆</text>
     <circle cx="60" cy="70" r="34" {...S} />
@@ -114,16 +114,6 @@ export const ART = [
     <path d="M98 24 A48 48 0 0 1 102 68" {...RED} strokeWidth="3.5" />
     <path d="M102 68 l-7 -4 M102 68 l3 -8" {...RED} strokeWidth="3.5" />
     <text x="60" y="110" {...T} fontSize="12" fill="#E4374F">40:00…</text>
-  </svg>,
-  /* 13 · Replies six days later */
-  <svg {...svgProps} key="6days">
-    <rect x="14" y="28" width="62" height="38" rx="10" {...S} />
-    <circle cx="32" cy="47" r="3.5" fill="#7E8398" />
-    <circle cx="45" cy="47" r="3.5" fill="#7E8398" />
-    <circle cx="58" cy="47" r="3.5" fill="#7E8398" />
-    <rect x="72" y="58" width="36" height="36" rx="5" {...S} />
-    <path d="M72 68 H108 M81 58 V50 M99 58 V50" {...S} />
-    <text x="90" y="86" {...T} fontSize="15" fill="#E8B54D">6d</text>
   </svg>,
   /* 15 · Regional movies FDFS */
   <svg {...svgProps} key="fdfs">

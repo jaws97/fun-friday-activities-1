@@ -16,23 +16,48 @@ export function JoinPage() {
   const [error, setError] = useState("");
   const [myTeam, setMyTeam] = useState(null);
 
-  /* Once registered, watch the shared state for the host's team shuffle —
-     the phone reveals its owner's team the moment it lands. */
+  /* Once registered, the phone syncs only when the page is opened or
+     brought back to the foreground, at most once a minute — never a
+     background poll, to stay inside the Hobby-plan storage budget.
+     Each visit reads the shared state (to reveal the team) and the
+     registry (to notice if the host removed this player). A missing entry
+     is confirmed with a second read a few seconds later, so a momentary
+     hiccup right after joining can't kick a real player out. */
   useEffect(() => {
     if (!player) return;
-    const check = async () => {
-      try {
-        const r = await fetch("/api/state", { cache: "no-store" });
-        if (r.ok && r.headers.get("x-event-state")) {
-          const s = await r.json();
-          const teamId = s.playerTeams?.[player.id];
-          setMyTeam(teamId !== undefined ? s.teams?.find((t) => t.id === teamId) ?? null : null);
-        }
-      } catch (e) { /* offline — keep last known team */ }
+    let last = 0;
+    let cancelled = false;
+    const readTeam = async () => {
+      const r = await fetch("/api/state", { cache: "no-store" });
+      if (r.ok && r.headers.get("x-event-state")) {
+        const s = await r.json();
+        const teamId = s.playerTeams?.[player.id];
+        setMyTeam(teamId !== undefined ? s.teams?.find((t) => t.id === teamId) ?? null : null);
+      }
     };
-    check();
-    const id = setInterval(check, 5000);
-    return () => clearInterval(id);
+    const stillListed = async () => {
+      const r = await fetch("/api/players", { cache: "no-store" });
+      if (!r.ok || !r.headers.get("x-event-state")) return true;
+      return (await r.json()).some((p) => p.id === player.id);
+    };
+    const sync = async () => {
+      if (document.visibilityState !== "visible" || Date.now() - last < 60000) return;
+      last = Date.now();
+      try {
+        await readTeam();
+        if (await stillListed()) return;
+        await new Promise((res) => setTimeout(res, 3000));
+        if (cancelled || (await stillListed())) return;
+        localStorage.removeItem("funfriday-player");
+        setPlayer(null);
+        setEditing(false);
+        setMyTeam(null);
+        setError("The host removed your entry — join again");
+      } catch (e) { /* offline — try again next visit */ }
+    };
+    sync();
+    document.addEventListener("visibilitychange", sync);
+    return () => { cancelled = true; document.removeEventListener("visibilitychange", sync); };
   }, [player?.id]);
 
   const submit = async (e) => {
