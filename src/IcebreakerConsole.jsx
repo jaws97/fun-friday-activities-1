@@ -100,6 +100,27 @@ export default function IcebreakerConsole({ onBackToSlides }) {
       return [...ts, { id: nextId, name: reserve.name, points: 0, color: reserve.color }];
     });
 
+  /* Grow or shrink the roster to n teams for a shuffle. Grows from the bench;
+     shrinks only through trailing teams with no points, so nothing scored is
+     ever dropped. Returns the roster it settled on so the caller can deal
+     into it without waiting for the state update. */
+  const resizeRoster = (n) => {
+    let out = [...teams];
+    while (out.length > Math.max(2, n) && out[out.length - 1].points === 0) out = out.slice(0, -1);
+    while (out.length < n) {
+      const reserve = benchFor(out)[0];
+      if (!reserve) break;
+      const nextId = Math.max(...out.map((t) => t.id)) + 1;
+      out = [...out, { id: nextId, name: reserve.name, points: 0, color: reserve.color }];
+    }
+    if (out.length !== teams.length) {
+      setTeams(out);
+      const keep = new Set(out.map((t) => t.id));
+      setPlayerTeams((pt) => Object.fromEntries(Object.entries(pt).filter(([, teamId]) => keep.has(teamId))));
+    }
+    return out;
+  };
+
   const lastTeam = teams[teams.length - 1];
   const canRemoveLast = teams.length > 2 && lastTeam.points === 0;
   const removeLastTeam = () => {
@@ -162,7 +183,12 @@ export default function IcebreakerConsole({ onBackToSlides }) {
           removeLastTeam={removeLastTeam} canRemoveLast={canRemoveLast}
         />
       )}
-      {tab === "players" && <PlayersTab admin={IS_ADMIN} teams={teams} playerTeams={playerTeams} setPlayerTeams={setPlayerTeams} />}
+      {tab === "players" && (
+        <PlayersTab
+          admin={IS_ADMIN} teams={teams} playerTeams={playerTeams} setPlayerTeams={setPlayerTeams}
+          resizeRoster={resizeRoster} maxTeams={MAX_TEAMS}
+        />
+      )}
       {tab === "rebus" && <RebusTab admin={IS_ADMIN} teams={teams} addPoints={addPoints} timer={timer} puzzleIdx={puzzleIdx} setPuzzleIdx={setPuzzleIdx} />}
 
       <Ticker teams={teams} />

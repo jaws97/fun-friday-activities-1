@@ -5,9 +5,16 @@ import { useState, useEffect } from "react";
    into the teams (round-robin, so sizes stay even), drop a stray entry,
    or clear the lot. Assignments live in the shared event state, so they
    survive refresh and show up on each player's own /join page. */
-export function PlayersTab({ admin, teams, playerTeams, setPlayerTeams }) {
+export function PlayersTab({ admin, teams, playerTeams, setPlayerTeams, resizeRoster, maxTeams }) {
   const [players, setPlayers] = useState([]);
+  /* How many teams the next shuffle deals into. Until the host picks a count
+     or a size, it follows the room: five per team, from however many have
+     joined so far. */
+  const [chosenCount, setChosenCount] = useState(null);
   const [confirmClear, setConfirmClear] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [addError, setAddError] = useState("");
+  const [adding, setAdding] = useState(false);
 
   const load = async () => {
     try {
@@ -22,6 +29,30 @@ export function PlayersTab({ admin, teams, playerTeams, setPlayerTeams }) {
     return () => clearInterval(id);
   }, []);
 
+  /* Host adds someone who has no phone or won't scan. Goes through the same
+     registry as the QR flow, so they show up unassigned and can be seated. */
+  const addByName = async (e) => {
+    e.preventDefault();
+    const clean = newName.trim();
+    if (!clean || adding) return;
+    setAdding(true);
+    setAddError("");
+    try {
+      const r = await fetch("/api/players", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: clean }),
+      });
+      if (r.status === 409) setAddError("That name's already on the list");
+      else if (!r.ok) setAddError("Couldn't add — try again");
+      else setNewName("");
+    } catch (err) {
+      setAddError("Couldn't add — check the connection");
+    }
+    setAdding(false);
+    load();
+  };
+
   const remove = async (id) => {
     try { await fetch(`/api/players?id=${id}`, { method: "DELETE" }); } catch (e) { /* retry next poll */ }
     load();
@@ -33,16 +64,31 @@ export function PlayersTab({ admin, teams, playerTeams, setPlayerTeams }) {
     load();
   };
 
+  const DEFAULT_SIZE = 5;
+  const clampCount = (n) => Math.max(2, Math.min(maxTeams, n));
+  const teamCount = chosenCount ?? clampCount(Math.ceil(players.length / DEFAULT_SIZE));
+  const setTeamCount = setChosenCount;
+
   const shuffle = () => {
+    const roster = resizeRoster(teamCount);
     const order = [...players];
     for (let i = order.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [order[i], order[j]] = [order[j], order[i]];
     }
     const next = {};
-    order.forEach((p, i) => { next[p.id] = teams[i % teams.length].id; });
+    order.forEach((p, i) => { next[p.id] = roster[i % roster.length].id; });
     setPlayerTeams(next);
   };
+
+  /* Team size is the other way of saying team count: pick 5 per team with
+     48 players and you get 10 teams (two of them a player short). */
+  const sizeFor = (count) => Math.ceil(players.length / count);
+  const teamSize = players.length ? sizeFor(teamCount) : 0;
+  const sizeOptions = players.length ? [...new Set(Array.from({ length: maxTeams - 1 }, (_, i) => sizeFor(i + 2)))].sort((a, b) => a - b) : [];
+  const pickSize = (size) => setTeamCount(clampCount(Math.ceil(players.length / size)));
+  const lo = players.length ? Math.floor(players.length / teamCount) : 0;
+  const hi = players.length ? Math.ceil(players.length / teamCount) : 0;
 
   const assigned = players.some((p) => playerTeams[p.id] !== undefined);
   const late = players.filter((p) => playerTeams[p.id] === undefined);
@@ -84,6 +130,39 @@ export function PlayersTab({ admin, teams, playerTeams, setPlayerTeams }) {
         here live. Shuffle deals the room evenly into the ten teams — each player's phone reveals their
         team the moment you do.
       </p>
+      {admin && (
+        <form className="add-player" onSubmit={addByName}>
+          <input
+            className="join-input add-player-input"
+            placeholder="Add someone by name (no phone?)"
+            value={newName}
+            maxLength={40}
+            onChange={(e) => { setNewName(e.target.value); setAddError(""); }}
+          />
+          <button className="btn ghost" type="submit" disabled={adding || !newName.trim()}>{adding ? "ADDING…" : "ADD"}</button>
+          {addError && <span className="join-error">{addError}</span>}
+        </form>
+      )}
+      {admin && players.length > 0 && (
+        <div className="shuffle-setup">
+          <label className="shuffle-field">
+            <span>TEAMS</span>
+            <select value={teamCount} onChange={(e) => setTeamCount(Number(e.target.value))}>
+              {Array.from({ length: maxTeams - 1 }, (_, i) => i + 2).map((n) => <option key={n} value={n}>{n}</option>)}
+            </select>
+          </label>
+          <label className="shuffle-field">
+            <span>PER TEAM</span>
+            <select value={teamSize} onChange={(e) => pickSize(Number(e.target.value))}>
+              {sizeOptions.map((n) => <option key={n} value={n}>{n}</option>)}
+            </select>
+          </label>
+          <span className="deck-meta">
+            {players.length} players → {teamCount} teams of {lo === hi ? lo : `${lo}–${hi}`}
+            {teamCount !== teams.length && ` · roster goes from ${teams.length} to ${teamCount} on shuffle`}
+          </span>
+        </div>
+      )}
       {admin && players.length > 0 && (
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 18 }}>
           <button className="btn gold" onClick={shuffle}>{assigned ? "Re-shuffle teams" : "Shuffle into teams"}</button>
