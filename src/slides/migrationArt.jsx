@@ -243,13 +243,13 @@ export const ART = [
     <rect x="80" y="52" width="30" height="20" rx="3" {...RED} strokeWidth="3.5" />
     <text x="95" y="66" {...T} fontSize="11" fill="#E4374F">MRP?</text>
   </svg>,
-  /* 20 · Bullied by Kavya */
-  <svg {...svgProps} key="kavya">
-    <circle cx="60" cy="60" r="36" {...S} />
-    <circle cx="47" cy="50" r="3.5" fill="#E8B54D" />
-    <circle cx="73" cy="50" r="3.5" fill="#E8B54D" />
-    <path d="M46 78 Q60 70 74 78" {...S} />
-    <rect x="66" y="60" width="26" height="10" rx="4" transform="rotate(-35 79 65)" fill="#EE8F1F" />
-    <path d="M20 22 l6 6 M30 16 l3 8 M14 34 l8 3" {...MUT} strokeWidth="3" />
-  </svg>,
+  /* 20 · Bullied by Kavya — hidden for now, restore together with the LABELS entry in MigrationSlide.jsx */
+  // <svg {...svgProps} key="kavya">
+  //   <circle cx="60" cy="60" r="36" {...S} />
+  //   <circle cx="47" cy="50" r="3.5" fill="#E8B54D" />
+  //   <circle cx="73" cy="50" r="3.5" fill="#E8B54D" />
+  //   <path d="M46 78 Q60 70 74 78" {...S} />
+  //   <rect x="66" y="60" width="26" height="10" rx="4" transform="rotate(-35 79 65)" fill="#EE8F1F" />
+  //   <path d="M20 22 l6 6 M30 16 l3 8 M14 34 l8 3" {...MUT} strokeWidth="3" />
+  // </svg>,
 ];

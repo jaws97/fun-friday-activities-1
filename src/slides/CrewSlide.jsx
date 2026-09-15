@@ -2,7 +2,8 @@ import dataEngineersVideo from "../assets/dataengineer.mp4";
 import developersVideo from "../assets/developer.mp4";
 import managersVideo from "../assets/manager.mp4";
 import vpVideo from "../assets/vp.mp4";
-import kavyaVideo from "../assets/kavya.mp4";
+// Hidden for now — restore this import and the CREW entry below when ready.
+// import kavyaVideo from "../assets/kavya.mp4";
 
 /* One entry per crew. To add another: drop the MP4 in src/assets,
    import it above, and add an entry here — the deck picks it up automatically. */
@@ -24,11 +25,11 @@ const CREW = [
     role: "The VP",
     video: vpVideo,
   },
-  {
-    role: "Kavya",
-    tagline: "The floor's renewable energy source",
-    video: kavyaVideo,
-  },
+  // {
+  //   role: "Kavya",
+  //   tagline: "The floor's renewable energy source",
+  //   video: kavyaVideo,
+  // },
 ];
 
 /* Step 0 is the "Who We Are" title card; each step after that is one crew,
