@@ -2,7 +2,8 @@ import { makeDoc } from "../server/blobDoc.js";
 
 /* Vercel serverless twin of the dev-server middleware in vite.config.js.
    Same /api/state contract; the JSON lives in one Vercel Blob document,
-   overwritten in place and read fresh from origin (see server/blobDoc.js). */
+   overwritten in place. Reads may lag a save by up to a minute (see
+   server/blobDoc.js) — the host console keeps the truth locally. */
 
 export const makeHandler = (doc = makeDoc("event-state.json")) => async (req, res) => {
   res.setHeader("x-event-state", "1");
@@ -15,7 +16,6 @@ export const makeHandler = (doc = makeDoc("event-state.json")) => async (req, re
         return;
       }
       res.setHeader("Content-Type", "application/json");
-      if (cur.url) res.setHeader("x-blob-url", cur.url);
       res.status(200).send(JSON.stringify(cur.value));
       return;
     }

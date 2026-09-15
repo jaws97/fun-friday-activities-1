@@ -1,99 +1,158 @@
-import { makeDoc } from "../server/blobDoc.js";
+import { put, del, list } from "@vercel/blob";
 
-/* Player registry for the /join QR flow.
+/* Player registry for the /join QR flow — one blob per player.
+
+   Why not one document for all players: the public Blob store serves reads
+   up to a minute stale, so read-modify-write of a shared list collided
+   under a burst of scans (1 of 18 survived in a live test). A blob per
+   player has nothing to collide with; the only shared operation is the
+   listing, and clients ask for it on demand rather than polling.
    GET    /api/players        -> all players, oldest first
    POST   /api/players        -> {name} adds a player, returns the record
    PUT    /api/players        -> {id, name} renames; same id, returns the record
    DELETE /api/players?id=X   -> removes one player (no id: removes all)
 
-   All players live in ONE blob document (players.json). Simultaneous joins
-   can't trample each other because every write is conditional on the
-   ETag read moments before, and retries on conflict (see server/blobDoc.js).
-   A failed read answers 503, never an empty list, so the console keeps
-   what it last saw. Player ids never change, so team assignments keyed
-   by id survive renames. */
+   Each player is one blob under players/, so simultaneous signups never
+   race each other. The whole record lives in the PATHNAME:
+       players/<id>~<base64url(name)>.json
+   so a GET is a single list() call — no per-player fetch of blob bodies.
+   The old shape (one fetch per player, with the name in the body) was
+   fragile: any fetch that failed silently dropped that player, and if
+   they all failed the response was an empty list. Now a failure is a
+   503 and the client keeps what it last saw.
+
+   The id never changes. A rename writes a new pathname (blob pathnames
+   are immutable, and overwrites are cached for up to a minute) and
+   deletes the old one; team assignments keyed by id survive it. */
+
+const PREFIX = "players/";
+const SEP = "~";
+
+export const encodeName = (name) => Buffer.from(name, "utf8").toString("base64url");
+export const decodeName = (b64) => Buffer.from(b64, "base64url").toString("utf8");
+
+export const pathFor = (id, name) => `${PREFIX}${id}${SEP}${encodeName(name)}.json`;
+
+/* players/<id>~<b64>.json -> {id, name, joinedAt}; null for anything else. */
+export const parsePath = (pathname) => {
+  if (!pathname.startsWith(PREFIX) || !pathname.endsWith(".json")) return null;
+  const stem = pathname.slice(PREFIX.length, -".json".length);
+  const at = stem.indexOf(SEP);
+  if (at < 0) return null;
+  const id = stem.slice(0, at);
+  const name = decodeName(stem.slice(at + 1));
+  const joinedAt = Number(id.split("-")[0]) || 0;
+  return name ? { id, name, joinedAt } : null;
+};
+
+/* Every blob under the prefix, following pagination. */
+async function allBlobs(prefix = PREFIX) {
+  const out = [];
+  let cursor;
+  do {
+    const page = await list({ prefix, cursor, limit: 1000 });
+    out.push(...page.blobs);
+    cursor = page.hasMore ? page.cursor : undefined;
+  } while (cursor);
+  return out;
+}
+
+/* Blobs written before the pathname format carried the name still hold
+   it in the body. Read those the old way; a failed read is an error, not
+   a silently missing player. */
+async function legacyPlayer(blob) {
+  const r = await fetch(blob.url, { cache: "no-store" });
+  if (!r.ok) throw new Error(`blob read failed: ${r.status}`);
+  const p = await r.json();
+  if (!p || !p.id || !p.name) throw new Error("blob body malformed");
+  return { id: String(p.id), name: String(p.name), joinedAt: Number(p.joinedAt) || 0 };
+}
+
+async function loadPlayers() {
+  const blobs = await allBlobs();
+  const players = await Promise.all(blobs.map((b) => parsePath(b.pathname) ?? legacyPlayer(b)));
+  players.sort((a, b) => a.joinedAt - b.joinedAt);
+  return { players, blobs };
+}
+
+const blobsFor = (blobs, id) => blobs.filter((b) => {
+  const p = parsePath(b.pathname);
+  return p ? p.id === id : b.pathname === `${PREFIX}${id}.json`;
+});
+
+const writePlayer = (player) =>
+  put(pathFor(player.id, player.name), JSON.stringify(player), {
+    access: "public",
+    contentType: "application/json",
+    addRandomSuffix: false,
+  });
 
 const readJson = (req) => (typeof req.body === "string" ? JSON.parse(req.body) : req.body);
-const cleanName = (v) => String(v ?? "").trim().slice(0, 40);
-const sameName = (a, b) => a.toLowerCase() === b.toLowerCase();
 
-export const makeHandler = (doc = makeDoc("players.json")) => async (req, res) => {
+export default async function handler(req, res) {
   res.setHeader("x-event-state", "1");
   res.setHeader("Cache-Control", "no-store");
   try {
     if (req.method === "GET") {
-      const cur = await doc.read();
-      const players = cur ? cur.value : [];
-      res.status(200).json([...players].sort((a, b) => a.joinedAt - b.joinedAt));
+      const { players } = await loadPlayers();
+      res.status(200).json(players);
       return;
     }
-
     if (req.method === "POST") {
-      const name = cleanName(readJson(req)?.name);
+      const name = String(readJson(req)?.name ?? "").trim().slice(0, 40);
       if (!name) {
         res.status(400).send("name required");
         return;
       }
-      let taken = false;
+      const { players } = await loadPlayers();
+      if (players.some((p) => p.name.toLowerCase() === name.toLowerCase())) {
+        res.status(409).send("name taken");
+        return;
+      }
       const now = Date.now();
       const player = { id: `${now}-${Math.random().toString(36).slice(2, 8)}`, name, joinedAt: now };
-      const r = await doc.update((list) => {
-        const players = list ?? [];
-        if (players.some((p) => sameName(p.name, name))) { taken = true; return undefined; }
-        return [...players, player];
-      });
-      if (taken) { res.status(409).send("name taken"); return; }
-      if (!r.ok) { res.status(503).send("busy, try again"); return; }
+      await writePlayer(player);
       res.status(200).json(player);
       return;
     }
-
     if (req.method === "PUT") {
       const body = readJson(req);
-      const name = cleanName(body?.name);
+      const name = String(body?.name ?? "").trim().slice(0, 40);
       const id = String(body?.id ?? "");
       if (!name || !id) {
         res.status(400).send("id and name required");
         return;
       }
-      let status = 200;
-      let updated = null;
-      const r = await doc.update((list) => {
-        const players = list ?? [];
-        const existing = players.find((p) => p.id === id);
-        if (!existing) { status = 404; return undefined; }
-        if (players.some((p) => p.id !== id && sameName(p.name, name))) { status = 409; return undefined; }
-        updated = { ...existing, name };
-        if (existing.name === name) return undefined;
-        return players.map((p) => (p.id === id ? updated : p));
-      });
-      if (status === 404) { res.status(404).send("player not found"); return; }
-      if (status === 409) { res.status(409).send("name taken"); return; }
-      if (!r.ok) { res.status(503).send("busy, try again"); return; }
-      res.status(200).json(updated);
-      return;
-    }
-
-    if (req.method === "DELETE") {
-      const id = req.query?.id;
-      if (!id) {
-        try { await doc.remove(); } catch (e) { /* nothing to remove */ }
-        res.status(200).send("ok");
+      const { players, blobs } = await loadPlayers();
+      const existing = players.find((p) => p.id === id);
+      if (!existing) {
+        res.status(404).send("player not found");
         return;
       }
-      const r = await doc.update((list) => {
-        const players = list ?? [];
-        return players.some((p) => p.id === String(id)) ? players.filter((p) => p.id !== String(id)) : undefined;
-      });
-      if (!r.ok) { res.status(503).send("busy, try again"); return; }
+      if (players.some((p) => p.id !== id && p.name.toLowerCase() === name.toLowerCase())) {
+        res.status(409).send("name taken");
+        return;
+      }
+      const player = { id, name, joinedAt: existing.joinedAt };
+      if (name !== existing.name) {
+        await writePlayer(player);
+        const old = blobsFor(blobs, id);
+        if (old.length) await del(old.map((b) => b.url));
+      }
+      res.status(200).json(player);
+      return;
+    }
+    if (req.method === "DELETE") {
+      const id = req.query?.id;
+      const blobs = id ? blobsFor(await allBlobs(), String(id)) : await allBlobs();
+      if (blobs.length) await del(blobs.map((b) => b.url));
       res.status(200).send("ok");
       return;
     }
-
     res.status(405).end();
   } catch (e) {
+    /* Never answer with a partial or empty list: the console keeps its
+       last good copy on any non-2xx and retries on the next poll. */
     res.status(503).send(String(e));
   }
-};
-
-export default makeHandler();
+}

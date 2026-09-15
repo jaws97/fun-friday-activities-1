@@ -16,53 +16,25 @@ export function JoinPage() {
   const [error, setError] = useState("");
   const [myTeam, setMyTeam] = useState(null);
 
-  /* Once registered, the phone syncs only when the page is opened or
-     brought back to the foreground, at most once a minute — never a
-     background poll, to stay inside the Hobby-plan storage budget.
-     Each visit reads the shared state (to reveal the team) and the
-     registry (to notice if the host removed this player). A missing entry
-     is confirmed with a second read a few seconds later, so a momentary
-     hiccup right after joining can't kick a real player out. */
-  useEffect(() => {
+  /* Once registered, the phone reads the shared state once when the page is
+     opened, and again whenever the player taps Refresh — never a poll. If
+     the host removed them, "Change my name" surfaces it (the server answers
+     404) and drops back to the join form. */
+  const [refreshing, setRefreshing] = useState(false);
+  const readTeam = async () => {
     if (!player) return;
-    let last = 0;
-    let cancelled = false;
-    const readTeam = async () => {
+    setRefreshing(true);
+    try {
       const r = await fetch("/api/state", { cache: "no-store" });
       if (r.ok && r.headers.get("x-event-state")) {
         const s = await r.json();
         const teamId = s.playerTeams?.[player.id];
         setMyTeam(teamId !== undefined ? s.teams?.find((t) => t.id === teamId) ?? null : null);
       }
-    };
-    const stillListed = async () => {
-      const r = await fetch("/api/players", { cache: "no-store" });
-      if (!r.ok || !r.headers.get("x-event-state")) return true;
-      return (await r.json()).some((p) => p.id === player.id);
-    };
-    /* Registry reads can be served from a cache that lags writes by up to a
-       minute, so a single miss proves nothing — least of all right after
-       joining. Only two misses on visits at least 90s apart count. */
-    let firstMissAt = 0;
-    const sync = async () => {
-      if (document.visibilityState !== "visible" || Date.now() - last < 60000) return;
-      last = Date.now();
-      try {
-        await readTeam();
-        if (await stillListed()) { firstMissAt = 0; return; }
-        if (!firstMissAt) { firstMissAt = Date.now(); return; }
-        if (cancelled || Date.now() - firstMissAt < 90000) return;
-        localStorage.removeItem("funfriday-player");
-        setPlayer(null);
-        setEditing(false);
-        setMyTeam(null);
-        setError("The host removed your entry — join again");
-      } catch (e) { /* offline — try again next visit */ }
-    };
-    sync();
-    document.addEventListener("visibilitychange", sync);
-    return () => { cancelled = true; document.removeEventListener("visibilitychange", sync); };
-  }, [player?.id]);
+    } catch (e) { /* offline — keep last known team */ }
+    setRefreshing(false);
+  };
+  useEffect(() => { readTeam(); }, [player?.id]);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -144,12 +116,17 @@ export function JoinPage() {
             ) : (
               <>
                 <div className="sl-sub">Registration confirmed</div>
-                <div className="sl-meta">HANG TIGHT · TEAMS DROP ON THIS SCREEN</div>
+                <div className="sl-meta">HANG TIGHT · TAP REFRESH WHEN THE HOST SAYS TEAMS ARE OUT</div>
               </>
             )}
-            <button className="btn ghost" onClick={() => { setEditing(true); setName(player.name); }}>
-              Change my name
-            </button>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
+              <button className="btn gold" onClick={readTeam} disabled={refreshing}>
+                {refreshing ? "CHECKING…" : myTeam ? "REFRESH" : "CHECK MY TEAM"}
+              </button>
+              <button className="btn ghost" onClick={() => { setEditing(true); setName(player.name); }}>
+                Change my name
+              </button>
+            </div>
             {error && <div className="join-error">{error}</div>}
           </div>
         )}

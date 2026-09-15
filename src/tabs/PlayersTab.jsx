@@ -16,18 +16,21 @@ export function PlayersTab({ admin, teams, playerTeams, setPlayerTeams, resizeRo
   const [addError, setAddError] = useState("");
   const [adding, setAdding] = useState(false);
 
+  /* Loaded when the tab opens and whenever the host hits Refresh — never a
+     poll: each listing is one of the 2,000 monthly storage operations on
+     the Hobby plan. */
+  const [loading, setLoading] = useState(false);
+  const [loadedAt, setLoadedAt] = useState(null);
   const load = async () => {
+    setLoading(true);
     try {
       const r = await fetch("/api/players", { cache: "no-store" });
-      if (r.ok && r.headers.get("x-event-state")) setPlayers(await r.json());
+      if (r.ok && r.headers.get("x-event-state")) { setPlayers(await r.json()); setLoadedAt(new Date()); }
     } catch (e) { /* backend unreachable — keep last list */ }
+    setLoading(false);
   };
 
-  useEffect(() => {
-    load();
-    const id = setInterval(load, 10000); // one storage read per poll: keep it slow
-    return () => clearInterval(id);
-  }, []);
+  useEffect(() => { load(); }, []);
 
   /* Host adds someone who has no phone or won't scan. Goes through the same
      registry as the QR flow, so they show up unassigned and can be seated. */
@@ -133,11 +136,17 @@ export function PlayersTab({ admin, teams, playerTeams, setPlayerTeams, resizeRo
 
   return (
     <div className="panel" key="players">
-      <h2>Players <span className="super-tag" style={{ background: "#2F9BD6" }}>{players.length} JOINED</span></h2>
+      <h2>
+        Players <span className="super-tag" style={{ background: "#2F9BD6" }}>{players.length} JOINED</span>
+        <button className="btn ghost mini" style={{ marginLeft: 12 }} onClick={load} disabled={loading}>
+          {loading ? "REFRESHING…" : "REFRESH"}
+        </button>
+        {loadedAt && <span className="deck-meta" style={{ marginLeft: 10 }}>as of {loadedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</span>}
+      </h2>
       <p className="hint">
-        Hit the QR button up top and put it on the big screen. Everyone scans, types a name, and shows up
-        here live. Shuffle deals the room evenly into the ten teams — each player's phone reveals their
-        team the moment you do.
+        Hit the QR button up top and put it on the big screen. Everyone scans and types a name; hit
+        Refresh to pull in who has joined. Shuffle deals the room evenly into the teams — then tell the
+        room to tap Refresh on their phones to see where they landed.
       </p>
       {admin && (
         <form className="add-player" onSubmit={addByName}>
