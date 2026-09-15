@@ -37,7 +37,7 @@ export function TeamsTab({ admin, teams, addPoints, rename, resetEvent, addTeam,
       {admin && <div style={{ marginTop: 24, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
         {confirmReset ? (
           <>
-            <span style={{ fontSize: 13, color: "#FF97A6", fontWeight: 700 }}>Wipe all scores, names, draws, and the Captain's Call?</span>
+            <span style={{ fontSize: 13, color: "#FF97A6", fontWeight: 700 }}>Wipe all scores, team names, and player assignments?</span>
             <button className="btn danger" onClick={() => { resetEvent(); setConfirmReset(false); }}>Yes, reset everything</button>
             <button className="btn ghost" onClick={() => setConfirmReset(false)}>Cancel</button>
           </>

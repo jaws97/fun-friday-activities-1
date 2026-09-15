@@ -1,6 +1,9 @@
 import React from "react";
 
+/* `trial: true` marks a warm-up: shown first, labelled as a trial, no scoring. */
 export const PUZZLES = [
+  { id: 2, answer: "To-do list (two DOs)", trial: true, render: <span className="rb rb-m">DODO&nbsp;LIST</span> },
+  { id: 5, answer: "One in a million", trial: true, render: <span className="rb rb-m">MILL1ON</span> },
   {
     id: 1, answer: "Inside job",
     render: (<div style={{ border: "5px solid #1A1D16", padding: "28px 54px", display: "inline-block" }}><span className="rb">JOB</span></div>),

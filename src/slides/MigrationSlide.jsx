@@ -32,8 +32,7 @@ export const LABELS = [
   { text: "I like travelling", sub: "Begur → Bellandur", subDelay: true },
   { text: "It's not an adventure unless your heart skips a beat" },
   { text: "I am an alcoholic", morphTo: "I am a workaholic", morphArt: "workaholic" },
-  // Hidden for now — restore together with the matching doodle at the end of ART in migrationArt.jsx.
-  // { text: "I get bullied by Kavya" },
+  { text: "I get bullied by Kavya" },
 ];
 
 /* Advances one label per arrow press (deck step). Step 0 shows the rules;

@@ -11,7 +11,7 @@ export function PlayersTab({ admin, teams, playerTeams, setPlayerTeams }) {
 
   const load = async () => {
     try {
-      const r = await fetch("/api/players");
+      const r = await fetch("/api/players", { cache: "no-store" });
       if (r.ok && r.headers.get("x-event-state")) setPlayers(await r.json());
     } catch (e) { /* backend unreachable — keep last list */ }
   };

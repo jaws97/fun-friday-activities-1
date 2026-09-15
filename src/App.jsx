@@ -20,6 +20,23 @@ export default function App() {
     return () => window.removeEventListener("popstate", onPop);
   }, []);
 
+  /* F toggles fullscreen on the host surfaces (deck, console, board).
+     Skipped while typing in a field, and on the players' join page. */
+  useEffect(() => {
+    if (path === "/join") return;
+    const onKey = (e) => {
+      if (e.key !== "f" && e.key !== "F") return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const t = e.target;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable)) return;
+      e.preventDefault();
+      if (document.fullscreenElement) document.exitFullscreen?.();
+      else document.documentElement.requestFullscreen?.().catch(() => {});
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [path]);
+
   const go = (p) => {
     window.history.pushState({}, "", p);
     setPath(p);

@@ -3,8 +3,7 @@ import { useState, useEffect } from "react";
 /* ─────────────────────────────────────────────────────────────
    WEDNESDAY PREMIER LEAGUE · Host Console
    Broadcast-graphics build: skewed gold slabs, condensed
-   numerals, FLIP-animated standings, timer ring, ticker tape,
-   full-screen +4 takeover. Physical Uno deck; console logs draws.
+   numerals, FLIP-animated standings, timer ring, ticker tape.
 ───────────────────────────────────────────────────────────── */
 
 import "./styles.css";
@@ -13,14 +12,10 @@ import { store } from "./lib/store.js";
 import { useCountdown } from "./hooks/useCountdown.js";
 import { ScoreStrip } from "./components/ScoreStrip.jsx";
 import { Ticker } from "./components/Ticker.jsx";
-import { Plus4Overlay } from "./components/Plus4Overlay.jsx";
 import { QROverlay } from "./components/QROverlay.jsx";
 import { TeamsTab } from "./tabs/TeamsTab.jsx";
 import { PlayersTab } from "./tabs/PlayersTab.jsx";
-import { AuctionTab } from "./tabs/AuctionTab.jsx";
 import { RebusTab } from "./tabs/RebusTab.jsx";
-import { ForfeitsTab } from "./tabs/ForfeitsTab.jsx";
-import { CaptainsCallTab } from "./tabs/CaptainsCallTab.jsx";
 
 /* Read-only spectator mode: open /board (or any URL with ?board) to watch
    the live standings without any host controls. */
@@ -35,11 +30,7 @@ const IS_ADMIN = typeof window !== "undefined" && window.localStorage.getItem("f
 export default function IcebreakerConsole({ onBackToSlides }) {
   const [teams, setTeams] = useState(DEFAULT_TEAMS);
   const [tab, setTab] = useState("teams");
-  const [drawLog, setDrawLog] = useState([]);
   const [puzzleIdx, setPuzzleIdx] = useState(0);
-  const [captainsCall, setCaptainsCall] = useState({ holder: null, used: false, power: null });
-  const [auctionRound, setAuctionRound] = useState(1);
-  const [plus4Team, setPlus4Team] = useState(null);
   const [playerTeams, setPlayerTeams] = useState({});
   const [hydrated, setHydrated] = useState(false);
   const [showQR, setShowQR] = useState(false);
@@ -47,9 +38,6 @@ export default function IcebreakerConsole({ onBackToSlides }) {
 
   const applyState = (s) => {
     if (s.teams) setTeams(s.teams);
-    if (s.drawLog) setDrawLog(s.drawLog);
-    if (s.captainsCall) setCaptainsCall(s.captainsCall);
-    if (s.auctionRound) setAuctionRound(s.auctionRound);
     if (typeof s.puzzleIdx === "number") setPuzzleIdx(s.puzzleIdx);
     if (s.playerTeams) setPlayerTeams(s.playerTeams);
   };
@@ -81,17 +69,14 @@ export default function IcebreakerConsole({ onBackToSlides }) {
     if (!hydrated || SPECTATOR || !IS_ADMIN) return;
     const t = setTimeout(() => {
       store
-        .set("tpl-event-state", JSON.stringify({ teams, drawLog, captainsCall, auctionRound, puzzleIdx, playerTeams }))
+        .set("tpl-event-state", JSON.stringify({ teams, puzzleIdx, playerTeams }))
         .catch(() => {});
     }, 400);
     return () => clearTimeout(t);
-  }, [hydrated, teams, drawLog, captainsCall, auctionRound, puzzleIdx, playerTeams]);
+  }, [hydrated, teams, puzzleIdx, playerTeams]);
 
   const resetEvent = async () => {
     setTeams(DEFAULT_TEAMS);
-    setDrawLog([]);
-    setCaptainsCall({ holder: null, used: false, power: null });
-    setAuctionRound(1);
     setPuzzleIdx(0);
     setPlayerTeams({});
     try { await store.delete("tpl-event-state"); } catch (e) { /* nothing saved */ }
@@ -116,11 +101,7 @@ export default function IcebreakerConsole({ onBackToSlides }) {
     });
 
   const lastTeam = teams[teams.length - 1];
-  const canRemoveLast =
-    teams.length > 2 &&
-    lastTeam.points === 0 &&
-    !drawLog.some((d) => d.teamId === lastTeam.id) &&
-    captainsCall.holder !== lastTeam.id;
+  const canRemoveLast = teams.length > 2 && lastTeam.points === 0;
   const removeLastTeam = () => {
     if (!canRemoveLast) return;
     setTeams((ts) => ts.slice(0, -1));
@@ -129,21 +110,10 @@ export default function IcebreakerConsole({ onBackToSlides }) {
     );
   };
 
-  const logDraw = (teamId, cardType) => {
-    setDrawLog((l) => [{ teamId, cardType }, ...l]);
-    if (cardType === "plus4") setPlus4Team(teams.find((t) => t.id === teamId));
-  };
-  const undoDraw = () => setDrawLog((l) => l.slice(1));
-
-  const leader = [...teams].sort((a, b) => b.points - a.points)[0];
-
   const TABS = [
     ["teams", "TEAMS"],
     ["players", "PLAYERS"],
-    ["auction", "TOO GOOD TO BE TRUE"],
     ["rebus", "WAIT, WHAT?"],
-    ["uno", "FORFEITS"],
-    ["call", "CAPTAIN'S CALL"],
   ];
 
   if (SPECTATOR)
@@ -156,8 +126,8 @@ export default function IcebreakerConsole({ onBackToSlides }) {
             <span className="l2">50 players · 10 teams</span>
           </div>
         </div>
-        <ScoreStrip teams={teams} captainsCall={captainsCall} />
-        <Ticker teams={teams} captainsCall={captainsCall} drawLog={drawLog} />
+        <ScoreStrip teams={teams} />
+        <Ticker teams={teams} />
       </div>
     );
 
@@ -175,7 +145,7 @@ export default function IcebreakerConsole({ onBackToSlides }) {
         </div>
       </div>
 
-      <ScoreStrip teams={teams} captainsCall={captainsCall} />
+      <ScoreStrip teams={teams} />
 
       <div className="tabs">
         {TABS.map(([key, label]) => (
@@ -193,13 +163,9 @@ export default function IcebreakerConsole({ onBackToSlides }) {
         />
       )}
       {tab === "players" && <PlayersTab admin={IS_ADMIN} teams={teams} playerTeams={playerTeams} setPlayerTeams={setPlayerTeams} />}
-      {tab === "auction" && <AuctionTab admin={IS_ADMIN} teams={teams} addPoints={addPoints} timer={timer} auctionRound={auctionRound} setAuctionRound={setAuctionRound} />}
       {tab === "rebus" && <RebusTab admin={IS_ADMIN} teams={teams} addPoints={addPoints} timer={timer} puzzleIdx={puzzleIdx} setPuzzleIdx={setPuzzleIdx} />}
-      {tab === "uno" && <ForfeitsTab admin={IS_ADMIN} teams={teams} drawLog={drawLog} logDraw={logDraw} undoDraw={undoDraw} />}
-      {tab === "call" && <CaptainsCallTab admin={IS_ADMIN} teams={teams} leader={leader} captainsCall={captainsCall} setCaptainsCall={setCaptainsCall} />}
 
-      <Ticker teams={teams} captainsCall={captainsCall} drawLog={drawLog} />
-      {plus4Team && <Plus4Overlay team={plus4Team} onDone={() => setPlus4Team(null)} />}
+      <Ticker teams={teams} />
       {showQR && <QROverlay onClose={() => setShowQR(false)} />}
     </div>
   );
