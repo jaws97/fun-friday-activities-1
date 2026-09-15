@@ -10,16 +10,28 @@ const STUDIES = [
     src: "Google · Project Aristotle",
   },
   {
-    num: "7×",
-    unit: "MORE ENGAGED",
-    claim: "People with a close friend at work are seven times more engaged. Only two in ten actually have one.",
-    src: "Gallup · Q12 Engagement Survey",
+    num: "20%",
+    unit: "FASTER TEAMS",
+    claim: "A bank moved coffee breaks so colleagues could actually talk. Productivity jumped a fifth in three months. Worth $15 million a year.",
+    src: "MIT · Pentland, Bank of America",
   },
   {
     num: "13%",
     unit: "MORE PRODUCTIVE",
     claim: "Happy workers get 13% more done. Same hours, better output. Tested on real call centres for six months.",
     src: "Oxford · Saïd Business School, 2019",
+  },
+  {
+    num: "32%",
+    unit: "LESS CORTISOL",
+    claim: "Laughing drops your stress hormone by a third. Laughing with other people also releases endorphins. So, you're welcome.",
+    src: "Meta-analysis, 2023 · Dunbar, Oxford",
+  },
+  {
+    num: "3",
+    unit: "EXPERIMENTS",
+    claim: "People who do something together, even walking in step, cooperate more afterwards. Even when it costs them. Tonight counts.",
+    src: "Stanford · Wiltermuth & Heath, 2009",
   },
 ];
 
@@ -36,7 +48,7 @@ export function WhySlide({ step }) {
 
   const shown = STUDIES.slice(0, Math.min(step, STUDIES.length));
   return (
-    <div className="slide center">
+    <div className="slide center why-slide">
       <div className="sl-kicker">BUT SERIOUSLY · WHY ARE WE DOING THIS?</div>
       <div className="why-grid">
         {shown.map((s, i) => (
