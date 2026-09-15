@@ -2,6 +2,7 @@ import dataEngineersVideo from "../assets/dataengineer.mp4";
 import developersVideo from "../assets/developer.mp4";
 import managersVideo from "../assets/manager.mp4";
 import vpVideo from "../assets/vp.mp4";
+import headOfIndiaVideo from "../assets/headofindia.mp4";
 import kavyaVideo from "../assets/kavya.mp4";
 
 /* One entry per crew. To add another: drop the MP4 in src/assets,
@@ -21,8 +22,14 @@ const CREW = [
     video: managersVideo,
   },
   {
-    role: "The VP",
+    role: "Nilabh Pandey",
+    tagline: "The VP",
     video: vpVideo,
+  },
+  {
+    role: "Christopher Shattuck",
+    tagline: "The Head of India",
+    video: headOfIndiaVideo,
   },
   {
     role: "Kavya",
