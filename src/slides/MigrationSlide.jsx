@@ -64,7 +64,6 @@ export function MigrationSlide({ step }) {
         <>
           <div className="sl-mast" style={{ fontSize: "clamp(30px,4.8vw,60px)" }}>If it's you, own it</div>
           <div className="sl-sub">A label appears · You walk to it · No hiding</div>
-          <div className="sl-meta">FIRST TO MOVE +5 · OUTED HIDING −5 · WIN A DEBATE +10 · BEST ONE-LINER +10</div>
         </>
       ) : (
         <div className="mig-stage" key={step}>
