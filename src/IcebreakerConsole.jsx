@@ -53,9 +53,7 @@ export default function IcebreakerConsole({ onBackToSlides }) {
     })();
   }, []);
 
-  /* ── spectators and non-admin viewers poll the shared JSON for live updates.
-     Every 15s: each read costs one storage operation on the Hobby plan, and
-     the store serves it up to a minute stale anyway, so faster buys nothing. ── */
+  /* ── spectators and non-admin viewers poll the shared JSON for live updates ── */
   useEffect(() => {
     if (!SPECTATOR && IS_ADMIN) return;
     const id = setInterval(async () => {
@@ -63,7 +61,7 @@ export default function IcebreakerConsole({ onBackToSlides }) {
         const saved = await store.get("tpl-event-state");
         if (saved && saved.value) applyState(JSON.parse(saved.value));
       } catch (e) { /* server unreachable — keep last known state */ }
-    }, 15000);
+    }, 5000);
     return () => clearInterval(id);
   }, []);
 

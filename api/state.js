@@ -1,22 +1,21 @@
-import { makeDoc } from "../server/blobDoc.js";
+import { store as db } from "../server/db.js";
 
 /* Vercel serverless twin of the dev-server middleware in vite.config.js.
-   Same /api/state contract; the JSON lives in one Vercel Blob document,
-   overwritten in place. Reads may lag a save by up to a minute (see
-   server/blobDoc.js) — the host console keeps the truth locally. */
+   Same /api/state contract; the JSON lives in one Postgres row (Supabase)
+   and reads are immediately consistent. */
 
-export const makeHandler = (doc = makeDoc("event-state.json")) => async (req, res) => {
+export const makeHandler = (store = db) => async (req, res) => {
   res.setHeader("x-event-state", "1");
   res.setHeader("Cache-Control", "no-store");
   try {
     if (req.method === "GET") {
-      const cur = await doc.read();
-      if (!cur) {
+      const value = await store.readState();
+      if (value === null) {
         res.status(404).end();
         return;
       }
       res.setHeader("Content-Type", "application/json");
-      res.status(200).send(JSON.stringify(cur.value));
+      res.status(200).send(JSON.stringify(value));
       return;
     }
     if (req.method === "POST" || req.method === "PUT") {
@@ -25,12 +24,12 @@ export const makeHandler = (doc = makeDoc("event-state.json")) => async (req, re
         res.status(400).send("invalid json");
         return;
       }
-      await doc.write(body);
+      await store.writeState(body);
       res.status(200).send("ok");
       return;
     }
     if (req.method === "DELETE") {
-      try { await doc.remove(); } catch (e) { /* nothing saved yet */ }
+      await store.removeState();
       res.status(200).send("ok");
       return;
     }
