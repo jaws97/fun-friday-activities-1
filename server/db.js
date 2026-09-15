@@ -73,11 +73,16 @@ export const makeStore = (query) => {
 
     async readState() {
       const rows = await q("select value from event_state where id = 1");
-      return rows.length ? rows[0].value : null;
+      if (!rows.length) return null;
+      /* jsonb arrives parsed; tolerate a row written as a JSON string. */
+      const v = rows[0].value;
+      return typeof v === "string" ? JSON.parse(v) : v;
     },
     async writeState(value) {
       await q(
-        "insert into event_state (id, value) values (1, $1::jsonb) on conflict (id) do update set value = excluded.value, updated_at = now()",
+        /* $1 is sent as text and parsed by the server: a bare ::jsonb cast
+           makes the client JSON-encode the string a second time. */
+        "insert into event_state (id, value) values (1, $1::text::jsonb) on conflict (id) do update set value = excluded.value, updated_at = now()",
         [JSON.stringify(value)]
       );
     },
