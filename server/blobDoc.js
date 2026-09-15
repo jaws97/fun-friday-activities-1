@@ -28,7 +28,7 @@ export const makeDoc = (pathname, blob = realBlob) => ({
     const r = await blob.get(pathname, { access: "public", useCache: false });
     if (!r || r.statusCode !== 200) return null;
     const text = await new Response(r.stream).text();
-    return { value: JSON.parse(text), etag: r.blob.etag };
+    return { value: JSON.parse(text), etag: r.blob.etag, url: r.blob.url };
   },
 
   /* Unconditional write (state saves: last write wins). */

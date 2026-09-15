@@ -40,14 +40,18 @@ export function JoinPage() {
       if (!r.ok || !r.headers.get("x-event-state")) return true;
       return (await r.json()).some((p) => p.id === player.id);
     };
+    /* Registry reads can be served from a cache that lags writes by up to a
+       minute, so a single miss proves nothing — least of all right after
+       joining. Only two misses on visits at least 90s apart count. */
+    let firstMissAt = 0;
     const sync = async () => {
       if (document.visibilityState !== "visible" || Date.now() - last < 60000) return;
       last = Date.now();
       try {
         await readTeam();
-        if (await stillListed()) return;
-        await new Promise((res) => setTimeout(res, 3000));
-        if (cancelled || (await stillListed())) return;
+        if (await stillListed()) { firstMissAt = 0; return; }
+        if (!firstMissAt) { firstMissAt = Date.now(); return; }
+        if (cancelled || Date.now() - firstMissAt < 90000) return;
         localStorage.removeItem("funfriday-player");
         setPlayer(null);
         setEditing(false);

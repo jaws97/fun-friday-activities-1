@@ -15,6 +15,7 @@ export const makeHandler = (doc = makeDoc("event-state.json")) => async (req, re
         return;
       }
       res.setHeader("Content-Type", "application/json");
+      if (cur.url) res.setHeader("x-blob-url", cur.url);
       res.status(200).send(JSON.stringify(cur.value));
       return;
     }
