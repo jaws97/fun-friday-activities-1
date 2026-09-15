@@ -17,14 +17,27 @@ export function JoinPage() {
   const [myTeam, setMyTeam] = useState(null);
 
   /* Once registered, the phone reads the shared state once when the page is
-     opened, and again whenever the player taps Refresh — never a poll. If
-     the host removed them, "Change my name" surfaces it (the server answers
-     404) and drops back to the join form. */
+     opened, and again whenever the player taps the button — never a poll.
+     The tap also asks the registry whether the host has removed this
+     player; the listing is read fresh on the server (no cache lag), and only
+     a definite answer counts — a failed request changes nothing. */
   const [refreshing, setRefreshing] = useState(false);
-  const readTeam = async () => {
+  const readTeam = async (checkRegistry = false) => {
     if (!player) return;
     setRefreshing(true);
     try {
+      if (checkRegistry) {
+        const r = await fetch("/api/players", { cache: "no-store" });
+        if (r.ok && r.headers.get("x-event-state") && !(await r.json()).some((p) => p.id === player.id)) {
+          localStorage.removeItem("funfriday-player");
+          setPlayer(null);
+          setEditing(false);
+          setMyTeam(null);
+          setError("The host removed your entry — join again");
+          setRefreshing(false);
+          return;
+        }
+      }
       const r = await fetch("/api/state", { cache: "no-store" });
       if (r.ok && r.headers.get("x-event-state")) {
         const s = await r.json();
@@ -120,7 +133,7 @@ export function JoinPage() {
               </>
             )}
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
-              <button className="btn gold" onClick={readTeam} disabled={refreshing}>
+              <button className="btn gold" onClick={() => readTeam(true)} disabled={refreshing}>
                 {refreshing ? "CHECKING…" : myTeam ? "REFRESH" : "CHECK MY TEAM"}
               </button>
               <button className="btn ghost" onClick={() => { setEditing(true); setName(player.name); }}>
